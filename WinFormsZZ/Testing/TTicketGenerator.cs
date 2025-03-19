@@ -1,0 +1,48 @@
+﻿using System;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MyLib;
+
+namespace Testing
+{
+    [TestClass]
+    public class TTicketGenerator
+    {
+        [TestMethod]
+        public void TestGenerateTicketsWithRandomOrder()
+        {
+            // Создаем тестовые данные
+            var questionManager = new QuestionManager();
+            questionManager.AddQuestion("Вопрос1", "знать");
+            questionManager.AddQuestion("Вопрос2", "знать");
+            questionManager.AddQuestion("Вопрос3", "знать");
+            questionManager.AddQuestion("Вопрос4", "уметь");
+            questionManager.AddQuestion("Вопрос5", "уметь");
+            questionManager.AddQuestion("Вопрос6", "уметь");
+            questionManager.AddQuestion("Вопрос7", "владеть");
+            questionManager.AddQuestion("Вопрос8", "владеть");
+            questionManager.AddQuestion("Вопрос9", "владеть");
+
+            // Создаем генератор билетов
+            var generator = new TicketGenerator();
+
+            // Генерация билетов
+            var tickets = generator.GenerateTickets(questionManager, 3);
+
+            // Проверка результата
+            Assert.IsNotNull(tickets, "Билеты не были созданы.");
+            Assert.AreEqual(3, tickets.Count, "Количество билетов не соответствует ожидаемому.");
+
+            // Проверка содержимого билетов
+            foreach (var ticket in tickets)
+            {
+                Assert.AreEqual(3, ticket.Questions.Count, "Билет содержит неправильное количество вопросов.");
+                Assert.AreEqual("знать", ticket.Questions[0].Section, "Неверная последовательность секций в билете.");
+                Assert.AreEqual("уметь", ticket.Questions[1].Section, "Неверная последовательность секций в билете.");
+                Assert.AreEqual("владеть", ticket.Questions[2].Section, "Неверная последовательность секций в билете.");
+            }
+
+            // Сообщение о прохождении теста
+            Console.WriteLine("Тест пройден успешно!");
+        }
+    }
+}

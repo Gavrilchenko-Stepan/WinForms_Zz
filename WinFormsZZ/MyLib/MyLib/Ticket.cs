@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace MyLib
 {
-    internal class Ticket
+    class Ticket
     {
         public List<Question> Questions { get; set; } = new List<Question>();
-
-        public new string ToString()
+        public override string ToString()
         {
             string output = "-------------------\n";
 

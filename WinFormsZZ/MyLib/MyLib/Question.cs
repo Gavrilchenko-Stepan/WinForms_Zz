@@ -6,11 +6,15 @@ using System.Threading.Tasks;
 
 namespace MyLib
 {
-    internal class Question
+    class Question
     {
+        // Текст вопроса
         public string Text { get; set; }
-        public string Section { get; set; } // "знать", "уметь", "владеть"
 
+        // Раздел вопроса ("знать", "уметь", "владеть")
+        public string Section { get; set; }
+
+        // Конструктор для создания объекта вопроса
         public Question(string text, string section)
         {
             Text = text;
