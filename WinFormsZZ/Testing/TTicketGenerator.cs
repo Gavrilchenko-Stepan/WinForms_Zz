@@ -41,7 +41,7 @@ namespace Testing
             Assert.AreEqual(3, tickets.Count, "Количество билетов не соответствует ожидаемому.");
 
             // Проверка содержимого билетов
-            foreach (var ticket in tickets)
+            foreach (Ticket ticket in tickets)
             {
                 Assert.AreEqual(3, ticket.Questions.Count, "Билет содержит неправильное количество вопросов.");
                 Assert.AreEqual("знать", ticket.Questions[0].Section, "Неверная последовательность секций в билете.");
