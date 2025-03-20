@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MyLib;
 
@@ -8,7 +9,6 @@ namespace Testing
     /// 1. Нужен тест-кейс, где бы было разное число вопросов в группах Знать, Уметь, Владеть
     /// 2. Нужен тест-кейс, где бы генерировалось НЕ 3 билета
     /// 3. Нужен тест-кейс, когда в принципе никаких вопросов
-    /// 4. Все var заменяем на конкретные типы
     /// 5. Нужен тест-кейс, где проверяются конкретные вопросы в билете (их фактические значения)
     /// 6. Нужна проверка, что вопросы в рамках сгенерированных билетов не повторяются
     /// </summary>
@@ -31,10 +31,10 @@ namespace Testing
             questionManager.AddQuestion("Вопрос9", "владеть");
 
             // Создаем генератор билетов
-            var generator = new TicketGenerator();
+            TicketGenerator generator = new TicketGenerator();
 
             // Генерация билетов
-            var tickets = generator.GenerateTickets(questionManager, 3);
+            List<Ticket> tickets = generator.GenerateTickets(questionManager, 3);
 
             // Проверка результата
             Assert.IsNotNull(tickets, "Билеты не были созданы.");

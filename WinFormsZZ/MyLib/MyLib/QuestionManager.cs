@@ -21,7 +21,7 @@ namespace MyLib
         public Question GetRandomQuestion(string section, List<Question> usedQuestions)
         {
             // Выбираем доступные вопросы из нужного раздела, исключая использованные
-            var availableQuestions = Questions
+            List<Question> availableQuestions = Questions
                 .Where(q => q.Section == section && !usedQuestions.Contains(q))
                 .ToList();
 
@@ -41,8 +41,8 @@ namespace MyLib
         public bool HasEnoughQuestions(int numTickets)
         {
             // Проверяем наличие необходимого количества вопросов в каждом разделе
-            var sections = new List<string> { "знать", "уметь", "владеть" };
-            foreach (var sec in sections)
+            List<string> sections = new List<string> { "знать", "уметь", "владеть" };
+            foreach (string sec in sections)
             {
                 int count = Questions.Count(q => q.Section == sec);
                 if (count < numTickets)

@@ -13,7 +13,7 @@ namespace MyLib
         {
             string output = "-------------------\n";
 
-            foreach (var question in Questions)
+            foreach (Question question in Questions)
             {
                 output += $"{question.Section}: {question.Text}\n";
             }

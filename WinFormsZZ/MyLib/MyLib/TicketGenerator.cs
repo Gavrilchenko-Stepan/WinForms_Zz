@@ -16,14 +16,14 @@ namespace MyLib
                 return null;
             }
             List<Ticket> tickets = new List<Ticket>();
-            var usedQuestions = new List<Question>();
+            List<Question> usedQuestions = new List<Question>();
             for (int i = 0; i < numTickets; i++)
             {
-                var ticket = new Ticket();
-                var sections = new List<string> { "знать", "уметь", "владеть" };
-                foreach (var section in sections)
+                Ticket ticket = new Ticket();
+                List<string> sections = new List<string> { "знать", "уметь", "владеть" };
+                foreach (string section in sections)
                 {
-                    var question = questionManager.GetRandomQuestion(section, usedQuestions);
+                    Question question = questionManager.GetRandomQuestion(section, usedQuestions);
                     if (question == null)
                     {
                         return null; // Если нет вопросов в разделе для этого билета
