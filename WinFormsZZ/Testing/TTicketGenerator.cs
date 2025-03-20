@@ -19,7 +19,7 @@ namespace Testing
         public void TestGenerateTicketsWithRandomOrder()
         {
             // Создаем тестовые данные
-            var questionManager = new QuestionManager();
+            QuestionManager questionManager = new QuestionManager();
             questionManager.AddQuestion("Вопрос1", "знать");
             questionManager.AddQuestion("Вопрос2", "знать");
             questionManager.AddQuestion("Вопрос3", "знать");
