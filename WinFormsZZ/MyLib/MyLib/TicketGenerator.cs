@@ -26,7 +26,7 @@ namespace MyLib
                     Question question = questionManager.GetRandomQuestion(section, usedQuestions);
                     if (question == null)
                     {
-                        return null; // Если нет вопросов в разделе для этого билета
+                        return null;
                     }
                     ticket.Questions.Add(question);
                     usedQuestions.Add(question);

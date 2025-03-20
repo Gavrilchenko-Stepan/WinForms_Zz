@@ -49,5 +49,31 @@ namespace Testing
                 Assert.AreEqual("владеть", ticket.Questions[2].Section, "Верная последовательность секций в билете.");
             }
         }
+        [TestMethod]
+        public void TestRandomNumberQuestion() ///тест-кейс, где разное число вопросов в группах Знать, Уметь, Владеть
+        {
+            QuestionManager questionManager = new QuestionManager();
+            questionManager.AddQuestion("Вопрос1", "знать");   
+            questionManager.AddQuestion("Вопрос2", "уметь");   
+            questionManager.AddQuestion("Вопрос3", "уметь");
+            questionManager.AddQuestion("Вопрос4", "владеть"); 
+            questionManager.AddQuestion("Вопрос5", "владеть");
+            questionManager.AddQuestion("Вопрос6", "владеть");
+
+            TicketGenerator generator = new TicketGenerator();
+            
+                List<Ticket> tickets = generator.GenerateTickets(questionManager, 3);
+
+                Assert.IsNotNull(tickets, "Билеты должны быть созданы, но не получилось");
+                Assert.AreEqual(3, tickets.Count, "Количество билетов соответствует ожидаемому.");
+
+                foreach (Ticket ticket in tickets)
+                {
+                    Assert.AreEqual(3, ticket.Questions.Count, "Билет содержит правильное количество вопросов.");
+                    Assert.AreEqual("знать", ticket.Questions[0].Section, "Верная последовательность секций в билете.");
+                    Assert.AreEqual("уметь", ticket.Questions[1].Section, "Верная последовательность секций в билете.");
+                    Assert.AreEqual("владеть", ticket.Questions[2].Section, "Верная последовательность секций в билете.");
+                }
+        }
     }
 }
