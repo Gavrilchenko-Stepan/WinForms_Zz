@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MyLib
 {
-    class Question
+     public class Question
     {
         // Текст вопроса
         public string Text { get; set; }

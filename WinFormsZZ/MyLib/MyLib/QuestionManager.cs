@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MyLib
 {
-    class QuestionManager
+     public class QuestionManager
     {
         // Список всех вопросов
         public List<Question> Questions { get; set; } = new List<Question>();

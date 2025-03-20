@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MyLib
 {
-    class TicketGenerator
+    public class TicketGenerator
     {
         public List<Ticket> GenerateTickets(QuestionManager questionManager, int numTickets)
         {

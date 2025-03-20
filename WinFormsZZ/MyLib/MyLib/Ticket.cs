@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MyLib
 {
-    class Ticket
+    public class Ticket
     {
         public List<Question> Questions { get; set; } = new List<Question>();
         public override string ToString()
