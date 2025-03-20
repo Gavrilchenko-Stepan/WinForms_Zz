@@ -37,20 +37,17 @@ namespace Testing
             List<Ticket> tickets = generator.GenerateTickets(questionManager, 3);
 
             // Проверка результата
-            Assert.IsNotNull(tickets, "Билеты не были созданы.");
-            Assert.AreEqual(3, tickets.Count, "Количество билетов не соответствует ожидаемому.");
+            Assert.IsNotNull(tickets, "Билеты были созданы.");
+            Assert.AreEqual(3, tickets.Count, "Количество билетов соответствует ожидаемому.");
 
             // Проверка содержимого билетов
             foreach (Ticket ticket in tickets)
             {
-                Assert.AreEqual(3, ticket.Questions.Count, "Билет содержит неправильное количество вопросов.");
-                Assert.AreEqual("знать", ticket.Questions[0].Section, "Неверная последовательность секций в билете.");
-                Assert.AreEqual("уметь", ticket.Questions[1].Section, "Неверная последовательность секций в билете.");
-                Assert.AreEqual("владеть", ticket.Questions[2].Section, "Неверная последовательность секций в билете.");
+                Assert.AreEqual(3, ticket.Questions.Count, "Билет содержит правильное количество вопросов.");
+                Assert.AreEqual("знать", ticket.Questions[0].Section, "Верная последовательность секций в билете.");
+                Assert.AreEqual("уметь", ticket.Questions[1].Section, "Верная последовательность секций в билете.");
+                Assert.AreEqual("владеть", ticket.Questions[2].Section, "Верная последовательность секций в билете.");
             }
-
-            // Сообщение о прохождении теста
-            Console.WriteLine("Тест пройден успешно!");
         }
     }
 }
