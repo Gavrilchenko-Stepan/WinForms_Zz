@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MyLib;
+using Microsoft.VisualBasic;
 
 namespace Testing
 {
@@ -16,7 +17,7 @@ namespace Testing
     public class TTicketGenerator
     {
         [TestMethod]
-        public void TestGenerateTicketsWithRandomOrder()
+        public void TestGenerateTicketsWithRandomQuestions()
         {
             // Создаем тестовые данные
             QuestionManager questionManager = new QuestionManager();
@@ -53,27 +54,65 @@ namespace Testing
         public void TestRandomNumberQuestion() ///тест-кейс, где разное число вопросов в группах Знать, Уметь, Владеть
         {
             QuestionManager questionManager = new QuestionManager();
-            questionManager.AddQuestion("Вопрос1", "знать");   
-            questionManager.AddQuestion("Вопрос2", "уметь");   
+            questionManager.AddQuestion("Вопрос1", "знать");
+            questionManager.AddQuestion("Вопрос2", "уметь");
             questionManager.AddQuestion("Вопрос3", "уметь");
-            questionManager.AddQuestion("Вопрос4", "владеть"); 
+            questionManager.AddQuestion("Вопрос4", "владеть");
             questionManager.AddQuestion("Вопрос5", "владеть");
             questionManager.AddQuestion("Вопрос6", "владеть");
 
             TicketGenerator generator = new TicketGenerator();
-            
-                List<Ticket> tickets = generator.GenerateTickets(questionManager, 3);
 
-                Assert.IsNotNull(tickets, "Билеты должны быть созданы, но не получилось");
-                Assert.AreEqual(3, tickets.Count, "Количество билетов соответствует ожидаемому.");
+            List<Ticket> tickets = generator.GenerateTickets(questionManager, 3);
+            string expwarning = "Ошибка! Не хватает вопросов!";
+            string 
 
-                foreach (Ticket ticket in tickets)
-                {
-                    Assert.AreEqual(3, ticket.Questions.Count, "Билет содержит правильное количество вопросов.");
-                    Assert.AreEqual("знать", ticket.Questions[0].Section, "Верная последовательность секций в билете.");
-                    Assert.AreEqual("уметь", ticket.Questions[1].Section, "Верная последовательность секций в билете.");
-                    Assert.AreEqual("владеть", ticket.Questions[2].Section, "Верная последовательность секций в билете.");
-                }
+            Assert.IsNotNull(tickets, warning);
+            Assert.AreEqual(3, tickets.Count, "Количество билетов соответствует ожидаемому.");
+
+            foreach (Ticket ticket in tickets)
+            {
+                Assert.AreEqual(3, ticket.Questions.Count, "Билет содержит правильное количество вопросов.");
+                Assert.AreEqual("знать", ticket.Questions[0].Section, "Верная последовательность секций в билете.");
+                Assert.AreEqual("уметь", ticket.Questions[1].Section, "Верная последовательность секций в билете.");
+                Assert.AreEqual("владеть", ticket.Questions[2].Section, "Верная последовательность секций в билете.");
+            }
+            ///Interaction.MsgBox("Недостаточно вопросов для генерации билета(-ов)!");
+        }
+        [TestMethod]
+        public void TestGenerationZeroTicket()
+        {
+            // Создаем тестовые данные
+            QuestionManager questionManager = new QuestionManager();
+            questionManager.AddQuestion("Вопрос1", "знать");
+            questionManager.AddQuestion("Вопрос2", "знать");
+            questionManager.AddQuestion("Вопрос3", "знать");
+            questionManager.AddQuestion("Вопрос4", "уметь");
+            questionManager.AddQuestion("Вопрос5", "уметь");
+            questionManager.AddQuestion("Вопрос6", "уметь");
+            questionManager.AddQuestion("Вопрос7", "владеть");
+            questionManager.AddQuestion("Вопрос8", "владеть");
+            questionManager.AddQuestion("Вопрос9", "владеть");
+
+            TicketGenerator generator = new TicketGenerator();
+
+            // Пыпытка генерации 0 билетов
+            List<Ticket> tickets = generator.GenerateTickets(questionManager, 0);
+
+            Assert.IsNotNull(tickets, "Список билетов был успешно создан.");
+            Assert.AreEqual(0, tickets.Count, "Программа вернула пустой список билетов.");
+        }
+
+        [TestMethod]
+        public void TestGenerateTicketsWithoutAnyQuestions()
+        {
+            QuestionManager questionManager = new QuestionManager();
+
+            TicketGenerator generator = new TicketGenerator();
+
+            List<Ticket> tickets = generator.GenerateTickets(questionManager, 3);
+
+            Assert.IsNotNull(tickets, "Список билетов не был успешно создан, т.к. не был задан список вопросов.");
         }
     }
 }

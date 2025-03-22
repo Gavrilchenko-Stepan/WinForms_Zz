@@ -9,11 +9,11 @@ namespace MyLib
 {
     public class TicketGenerator
     {
-        public List<Ticket> GenerateTickets(QuestionManager questionManager, int numTickets)
+        public List<Ticket>, string GenerateTickets(QuestionManager questionManager, int numTickets)
         {
             if (!questionManager.HasEnoughQuestions(numTickets))
             {
-                return null;
+                return null, "неТ ВЫПОРОСОВ ДЛЯ БИЛЕТОВ";
             }
             List<Ticket> tickets = new List<Ticket>();
             List<Question> usedQuestions = new List<Question>();
