@@ -53,6 +53,7 @@ namespace MainForm
                 textBoxOutput.Text = outputBuilder.ToString();
             }
         }
+
         private (List<Ticket>, string) GenerateTickets(QuestionManager questionManager, int numTickets)
         {
             if (!questionManager.HasEnoughQuestions(numTickets))
