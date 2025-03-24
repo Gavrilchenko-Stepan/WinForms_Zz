@@ -9,11 +9,11 @@ namespace MyLib
 {
     public class TicketGenerator
     {
-        public ( List<Ticket>, string) GenerateTickets(QuestionManager questionManager, int numTickets)
+        public (List<Ticket>, string) GenerateTickets(QuestionManager questionManager, int numTickets)
         {
             if (!questionManager.HasEnoughQuestions(numTickets))
             {
-                return (null, "неТ ВЫПОРОСОВ ДЛЯ БИЛЕТОВ");
+                return (null, "Ошибка!");
             }
             List<Ticket> tickets = new List<Ticket>();
             List<Question> usedQuestions = new List<Question>();
@@ -33,7 +33,7 @@ namespace MyLib
                 }
                 tickets.Add(ticket);
             }
-            return (tickets, "");
+            return (tickets, "Ошибка!");
         }
     }
 }
