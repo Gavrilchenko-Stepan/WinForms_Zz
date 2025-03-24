@@ -26,7 +26,6 @@ namespace MainForm
             questionManager.AddQuestion("Как работать с файлами?", "владеть");
             questionManager.AddQuestion("Как взаимодействовать с базой данных?", "владеть");
         }
-
         private void buttonGenerate_Click(object sender, EventArgs e)
         {
             int numTickets = (int)numericUpDown1.Value; // Предполагаем, что есть NumericUpDown для выбора количества билетов
