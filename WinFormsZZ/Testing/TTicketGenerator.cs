@@ -8,11 +8,11 @@ using System.Linq;
 namespace Testing
 {
     /// <summary>
-    /// 1. Нужен тест-кейс, где бы было разное число вопросов в группах Знать, Уметь, Владеть
-    /// 2. Нужен тест-кейс, где бы генерировалось НЕ 3 билета
-    /// 3. Нужен тест-кейс, когда в принципе никаких вопросов
-    /// 5. Нужен тест-кейс, где проверяются конкретные вопросы в билете (их фактические значения)
-    /// 6. Нужна проверка, что вопросы в рамках сгенерированных билетов не повторяются
+    /// Тесты которые следует добавить:
+    /// 
+
+
+
     /// </summary>
     [TestClass]
     public class TTicketGenerator
@@ -116,9 +116,12 @@ namespace Testing
             Assert.IsNotNull(tickets, "Список билетов не был успешно создан, т.к. не был задан список вопросов.");
         }
 
-        //
+
+
+        //// MStest где была бы генерация не 3 билетов и проверрка этого, также проверка 
+        ///на то что вопросы в рамках сгенерированых билетов не повторяются
         [TestMethod]
-        public void TestGenerateVariableNumberOfTickets() //тест , где бы генерировалось НЕ 3 билета
+        public void TestGenerateVariableNumberOfTickets() 
         {
             QuestionManager manager = new QuestionManager();
             manager.AddQuestion("Вопрос 1", "знать");
@@ -135,8 +138,8 @@ namespace Testing
 
 
             (List<Ticket> ActTickets, string errorMessage) = generator.GenerateTickets(manager, expectedNumberOfTickets);
+            (List<Ticket> tickets, _) = generator.GenerateTickets(manager, 2);
 
-      
             Assert.IsNotNull(ActTickets);
             Assert.AreEqual(expectedNumberOfTickets, ActTickets.Count);
             Assert.AreEqual(3, ActTickets[0].Questions.Count);
@@ -152,25 +155,7 @@ namespace Testing
             }
 
         }
-        [TestMethod] //тест где будет проверка, что вопросы в рамках сгенерированных билетов не повторяются
-        public void TestUniqueQuestionsInEachTicket()
-        {
-           
-            var manager = new QuestionManager();
-            manager.AddQuestion("Вопрос 1", "знать");
-            manager.AddQuestion("Вопрос 2", "уметь");
-            manager.AddQuestion("Вопрос 3", "владеть");
-            manager.AddQuestion("Вопрос 4", "знать");
-            manager.AddQuestion("Вопрос 5", "уметь");
-            manager.AddQuestion("Вопрос 6", "владеть");
 
-            TicketGenerator generator = new TicketGenerator();
-           (List<Ticket> tickets, _) = generator.GenerateTickets(manager, 2);
-
-         
-
-        }
-        //Сделай тест MStest где была бы генерация не 3 билетов и проверрка этого, также проверка на то что вопросы в рамках сгенерированых билетов не повторяются
         [TestMethod]
         public void TestSpecificQuestionsInTicket() // тест где проверяются конкретные вопросы в билете (их фактические значения)
         {
