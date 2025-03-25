@@ -35,5 +35,27 @@ namespace MyLib
             }
             return (tickets, "Ошибка!");
         }
+
+        public string FormatTickets(List<Ticket> tickets)
+        {
+            StringBuilder outputBuilder = new StringBuilder();
+
+            for (int i = 0; i < tickets.Count; i++)
+            {
+                Ticket ticket = tickets[i];
+                outputBuilder.AppendLine($"Билет #{i + 1}:");
+
+                foreach (var question in ticket.Questions)
+                {
+                    outputBuilder.AppendLine($"  - Вопрос: {question.Text}");
+                    outputBuilder.AppendLine($"    Раздел: {question.Section}");
+                    outputBuilder.AppendLine();
+                }
+
+                outputBuilder.AppendLine(new string('-', 40)); // Разделитель между билетами
+            }
+
+            return outputBuilder.ToString();
+        }
     }
 }
