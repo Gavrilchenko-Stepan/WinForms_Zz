@@ -133,7 +133,7 @@ namespace Testing
             const int numberOfTickets = 2; // Генерируем 2 билетов
 
             // Act
-            var (tickets, errorMessage) = generator.GenerateTickets(manager, numberOfTickets);
+            (List<Ticket> tickets, errorMessage) = generator.GenerateTickets(manager, numberOfTickets);
 
             // Assert
             Assert.IsNotNull(tickets);
