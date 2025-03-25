@@ -111,17 +111,16 @@ namespace Testing
 
             TicketGenerator generator = new TicketGenerator();
 
-            var (tickets, expwarning) = generator.GenerateTickets(questionManager, 3);
+            (List<Ticket> tickets, string expwarning) = generator.GenerateTickets(questionManager, 3);
 
             Assert.IsNotNull(tickets, "Список билетов не был успешно создан, т.к. не был задан список вопросов.");
         }
 
-
+        //
         [TestMethod]
         public void TestGenerateVariableNumberOfTickets() //тест , где бы генерировалось НЕ 3 билета
         {
-            // Arrange
-            var manager = new QuestionManager();
+            QuestionManager manager = new QuestionManager();
             manager.AddQuestion("Вопрос 1", "знать");
             manager.AddQuestion("Вопрос 2", "уметь");
             manager.AddQuestion("Вопрос 3", "владеть");
@@ -129,22 +128,34 @@ namespace Testing
             manager.AddQuestion("Вопрос 5", "уметь");
             manager.AddQuestion("Вопрос 6", "владеть");
 
+          
+            const int expectedNumberOfTickets = 2;
             var generator = new TicketGenerator();
-            const int numberOfTickets = 2; // Генерируем 2 билетов
 
-            // Act
-            (List<Ticket> tickets, errorMessage) = generator.GenerateTickets(manager, numberOfTickets);
 
-            // Assert
-            Assert.IsNotNull(tickets);
-            Assert.AreEqual(numberOfTickets, tickets.Count);
-            Assert.AreEqual(3, tickets[0].Questions.Count);
-            Assert.AreEqual(3, tickets[numberOfTickets - 1].Questions.Count);
+
+            (List<Ticket> ActTickets, string errorMessage) = generator.GenerateTickets(manager, expectedNumberOfTickets);
+
+      
+            Assert.IsNotNull(ActTickets);
+            Assert.AreEqual(expectedNumberOfTickets, ActTickets.Count);
+            Assert.AreEqual(3, ActTickets[0].Questions.Count);
+            Assert.AreEqual(3, ActTickets[expectedNumberOfTickets - 1].Questions.Count);
+
+            foreach (var ticket in tickets)
+            {
+
+                int uniqueQuestionsCount = ticket.Questions.Select(q => q.Text).Distinct().Count();
+                Assert.AreEqual(uniqueQuestionsCount, ticket.Questions.Count,
+                    $"Билет содержит дублирующиеся вопросы! Количество уникальных вопросов:" +
+                    $" {uniqueQuestionsCount}, общее количество вопросов: {ticket.Questions.Count}");
+            }
+
         }
         [TestMethod] //тест где будет проверка, что вопросы в рамках сгенерированных билетов не повторяются
         public void TestUniqueQuestionsInEachTicket()
         {
-            // Arrange
+           
             var manager = new QuestionManager();
             manager.AddQuestion("Вопрос 1", "знать");
             manager.AddQuestion("Вопрос 2", "уметь");
@@ -153,38 +164,33 @@ namespace Testing
             manager.AddQuestion("Вопрос 5", "уметь");
             manager.AddQuestion("Вопрос 6", "владеть");
 
-            var generator = new TicketGenerator();
-            var (tickets, _) = generator.GenerateTickets(manager, 2);
+            TicketGenerator generator = new TicketGenerator();
+           (List<Ticket> tickets, _) = generator.GenerateTickets(manager, 2);
 
-            // Act & Assert
-            foreach (var ticket in tickets)
-            {
-                // Проверим, что все вопросы в билете уникальны
-                var uniqueQuestionsCount = ticket.Questions.Select(q => q.Text).Distinct().Count();
-                Assert.AreEqual(uniqueQuestionsCount, ticket.Questions.Count,
-                    $"Билет содержит дублирующиеся вопросы! Количество уникальных вопросов: {uniqueQuestionsCount}, общее количество вопросов: {ticket.Questions.Count}");
-            }
+         
+
         }
+        //Сделай тест MStest где была бы генерация не 3 билетов и проверрка этого, также проверка на то что вопросы в рамках сгенерированых билетов не повторяются
         [TestMethod]
         public void TestSpecificQuestionsInTicket() // тест где проверяются конкретные вопросы в билете (их фактические значения)
         {
-            // Arrange
-            var manager = new QuestionManager();
-            var expectedKnowQuestion = new Question("a1", "знать");
-            var expectedCanQuestion = new Question("a2", "уметь");
-            var expectedMasterQuestion = new Question("a3", "владеть");
+           
+            QuestionManager manager = new QuestionManager();
+            Question expectedKnowQuestion = new Question("a1", "знать");
+            Question expectedCanQuestion = new Question("a2", "уметь");
+            Question expectedMasterQuestion = new Question("a3", "владеть");
 
             manager.AddQuestion(expectedKnowQuestion.Text, expectedKnowQuestion.Section);
             manager.AddQuestion(expectedCanQuestion.Text, expectedCanQuestion.Section);
             manager.AddQuestion(expectedMasterQuestion.Text, expectedMasterQuestion.Section);
 
-            var generator = new TicketGenerator();
-            var (tickets, _) = generator.GenerateTickets(manager, 1);
+            TicketGenerator generator = new TicketGenerator();
+            (List<Ticket> tickets, _) = generator.GenerateTickets(manager, 1);
 
-            // Act
-            var actualTicket = tickets[0];
-
-            // Assert
+        
+            Ticket actualTicket = tickets[0];
+            
+          
             Assert.AreEqual(3, actualTicket.Questions.Count);
             Assert.AreEqual(expectedKnowQuestion.Text, actualTicket.Questions[0].Text);
             Assert.AreEqual(expectedKnowQuestion.Section, actualTicket.Questions[0].Section);
@@ -193,5 +199,6 @@ namespace Testing
             Assert.AreEqual(expectedMasterQuestion.Text, actualTicket.Questions[2].Text);
             Assert.AreEqual(expectedMasterQuestion.Section, actualTicket.Questions[2].Section);
         }
+        
     }
 }
