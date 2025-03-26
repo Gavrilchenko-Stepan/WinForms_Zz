@@ -48,8 +48,8 @@ namespace MainForm
             {
                 MessageBox.Show("Ошибка! Введите корректное число.");
             }
-            var ticketGenerator = new TicketGenerator();
-            var (tickets, message) = GenerateTickets(questionManager, numTickets);
+            TicketGenerator ticketGenerator = new TicketGenerator(questionManager);
+            var (tickets, message) = ticketGenerator.GenerateTickets(questionManager, numTickets);
             if (tickets == null)
             {
                 MessageBox.Show(message);
@@ -58,35 +58,6 @@ namespace MainForm
             {
                 textBoxOutput.Text = ticketGenerator.FormatTickets(tickets);
             }
-        }
-
-        private (List<Ticket>, string) GenerateTickets(QuestionManager questionManager, int numTickets)
-        {
-            if (!questionManager.HasEnoughQuestions(numTickets))
-            {
-                return (null, "Ошибка: недостаточно вопросов для генерации билетов!");
-            }
-
-            List<Ticket> tickets = new List<Ticket>();
-            List<Question> usedQuestions = new List<Question>();
-            for (int i = 0; i < numTickets; i++)
-            {
-                Ticket ticket = new Ticket();
-                List<string> sections = new List<string> { "знать", "уметь", "владеть" };
-
-                foreach (string section in sections)
-                {
-                    Question question = questionManager.GetRandomQuestion(section, usedQuestions);
-                    if (question == null)
-                    {
-                        return (null, "Ошибка: недостаточно вопросов в разделе " + section);
-                    }
-                    ticket.Questions.Add(question);
-                    usedQuestions.Add(question);
-                }
-                tickets.Add(ticket);
-            }
-            return (tickets, "");
         }
     }
 }
