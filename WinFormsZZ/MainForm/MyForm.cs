@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace MainForm
 {
@@ -25,10 +26,28 @@ namespace MainForm
             questionManager.AddQuestion("Как обработать исключение?", "уметь");
             questionManager.AddQuestion("Как работать с файлами?", "владеть");
             questionManager.AddQuestion("Как взаимодействовать с базой данных?", "владеть");
+            questionManager.AddQuestion("Какова разница между абстрактным классом и интерфейсом?", "знать");
+            questionManager.AddQuestion("Как использовать делегаты и события в С#?", "знать");
+            questionManager.AddQuestion("Как создать и использовать обобщенные методы?", "уметь");
+            questionManager.AddQuestion("Как обрабатывать асинхронные операции с помощью async/await?", "уметь");
+            questionManager.AddQuestion("Как оптимизировать производительность приложения?", "владеть");
+            questionManager.AddQuestion("Как написать многопоточное приложение?", "владеть");
         }
-        private void buttonGenerate_Click(object sender, EventArgs e)
+
+        private void toolStripButton1_Click(object sender, EventArgs e)
         {
-            int numTickets = (int)numericUpDown1.Value;
+            string input = toolStripTextBoxInput.Text;
+            int numTickets;
+
+            if (int.TryParse(input, out numTickets))
+            {
+                // Если преобразование прошло успешно, используем переменную numTickets
+                Console.WriteLine($"Количество билетов: {numTickets}");
+            }
+            else
+            {
+                MessageBox.Show("Ошибка! Введите корректное число.");
+            }
             var ticketGenerator = new TicketGenerator();
             var (tickets, message) = GenerateTickets(questionManager, numTickets);
             if (tickets == null)
