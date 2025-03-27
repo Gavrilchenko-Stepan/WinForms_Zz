@@ -20,6 +20,7 @@ namespace Testing
         [TestMethod]
         public void TestGenerateTicketsWithRandomQuestions()
         {
+            
             // Создаем тестовые данные
             QuestionManager questionManager = new QuestionManager();
             questionManager.AddQuestion("Вопрос1", "знать");
@@ -33,7 +34,7 @@ namespace Testing
             questionManager.AddQuestion("Вопрос9", "владеть");
 
             // Создаем генератор билетов
-            TicketGenerator generator = new TicketGenerator();
+            TicketGenerator generator = new TicketGenerator(questionManager);
 
             // Генерация билетов
             var (tickets, expwarning) = generator.GenerateTickets(questionManager, 3);
@@ -62,7 +63,7 @@ namespace Testing
             questionManager.AddQuestion("Вопрос5", "владеть");
             questionManager.AddQuestion("Вопрос6", "владеть");
 
-            TicketGenerator generator = new TicketGenerator();
+            TicketGenerator generator = new TicketGenerator(questionManager);
 
             var (tickets, expwarning) = generator.GenerateTickets(questionManager, 3);
              expwarning = "Ошибка! Не хватает вопросов!";
@@ -95,7 +96,7 @@ namespace Testing
             questionManager.AddQuestion("Вопрос8", "владеть");
             questionManager.AddQuestion("Вопрос9", "владеть");
 
-            TicketGenerator generator = new TicketGenerator();
+            TicketGenerator generator = new TicketGenerator(questionManager);
 
             // Пыпытка генерации 0 билетов
             var (tickets, expwarning) = generator.GenerateTickets(questionManager, 0);
@@ -109,7 +110,7 @@ namespace Testing
         {
             QuestionManager questionManager = new QuestionManager();
 
-            TicketGenerator generator = new TicketGenerator();
+            TicketGenerator generator = new TicketGenerator(questionManager);
 
             (List<Ticket> tickets, string expwarning) = generator.GenerateTickets(questionManager, 3);
 
@@ -123,6 +124,7 @@ namespace Testing
         [TestMethod]
         public void TestGenerateVariableNumberOfTickets() 
         {
+         
             QuestionManager manager = new QuestionManager();
             manager.AddQuestion("Вопрос 1", "знать");
             manager.AddQuestion("Вопрос 2", "уметь");
@@ -133,7 +135,7 @@ namespace Testing
 
           
             const int expectedNumberOfTickets = 2;
-            var generator = new TicketGenerator();
+            var generator = new TicketGenerator(manager);
 
 
 
@@ -153,7 +155,7 @@ namespace Testing
                     $"Билет содержит дублирующиеся вопросы! Количество уникальных вопросов:" +
                     $" {uniqueQuestionsCount}, общее количество вопросов: {ticket.Questions.Count}");
             }
-
+            
         }
 
         [TestMethod]
@@ -169,7 +171,7 @@ namespace Testing
             manager.AddQuestion(expectedCanQuestion.Text, expectedCanQuestion.Section);
             manager.AddQuestion(expectedMasterQuestion.Text, expectedMasterQuestion.Section);
 
-            TicketGenerator generator = new TicketGenerator();
+            TicketGenerator generator = new TicketGenerator(manager);
             (List<Ticket> tickets, _) = generator.GenerateTickets(manager, 1);
 
         
@@ -184,6 +186,37 @@ namespace Testing
             Assert.AreEqual(expectedMasterQuestion.Text, actualTicket.Questions[2].Text);
             Assert.AreEqual(expectedMasterQuestion.Section, actualTicket.Questions[2].Section);
         }
-        
+        [TestMethod]
+        public void Test_AllTicketsHaveUniqueQuestions() // проверка на то что вопросы не повторяются вообще во всех билетах
+        {
+     
+            var manager = new QuestionManager();
+            
+            manager.AddQuestion("Вопрос 1", "знать");
+            manager.AddQuestion("Вопрос 2", "уметь");
+            manager.AddQuestion("Вопрос 3", "владеть");
+            manager.AddQuestion("Вопрос 4", "знать");
+            manager.AddQuestion("Вопрос 5", "уметь");
+            manager.AddQuestion("Вопрос 6", "владеть");
+
+            var generator = new TicketGenerator(manager);
+
+            int NumTickets = 2;
+
+            (List<Ticket> tickets, string expwarning) = generator.GenerateTickets(manager, NumTickets);
+
+            Assert.IsNull(expwarning, "ошибка при генерации билетов" + expwarning);
+            Assert.IsNotNull(tickets, "Список билетовн не должен быть null");
+
+
+
+            // var result = generator.GenerateTickets(manager, 2); 
+            //var allTickets = result.Item1;
+
+
+
+        }
     }
+
 }
+
