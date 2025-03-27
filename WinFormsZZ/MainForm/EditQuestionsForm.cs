@@ -60,5 +60,16 @@ namespace MainForm
                 currentQuestions = questions.ToList();
             }
         }
+
+        private void DisplayQuestions(List<Question> questions)
+        {
+            textBox1.Text = "";
+
+            // Отображаем вопросы текущей категории
+            foreach (var question in questions)
+            {
+                textBox1.AppendText($"{question.Text}\n\n");
+            }
+        }
     }
 }
