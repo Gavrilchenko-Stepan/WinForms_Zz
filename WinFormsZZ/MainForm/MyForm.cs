@@ -41,7 +41,6 @@ namespace MainForm
 
             if (int.TryParse(input, out numTickets))
             {
-                // Если преобразование прошло успешно, используем переменную numTickets
                 Console.WriteLine($"Количество билетов: {numTickets}");
             }
             else
