@@ -39,6 +39,7 @@ namespace MainForm
         {
             selectedCategory = checkedListBox1.CheckedItems.Cast<string>().FirstOrDefault();
             UpdateCurrentQuestions(selectedCategory);
+            DisplayQuestions(currentQuestions);
         }
 
         private void UpdateCurrentQuestions(string category)
@@ -69,6 +70,33 @@ namespace MainForm
             foreach (var question in questions)
             {
                 textBox1.AppendText($"{question.Text}\n\n");
+            }
+        }
+
+        private void buttonОК_Click(object sender, EventArgs e)
+        {
+            SaveChanges();
+            Close();
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        void SaveChanges()
+        {
+            string[] updatedQuestions = textBox1.Text.Split(new[] { "\r\n\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+            // Обновляем тексты вопросов в списке currentQuestions
+            for (int i = 0; i < Math.Min(updatedQuestions.Length, currentQuestions.Count); i++)
+            {
+                currentQuestions[i].Text = updatedQuestions[i];
+            }
+
+            for (int i = 0; i < currentQuestions.Count; i++)
+            {
+                questions[i].Text = currentQuestions[i].Text;
             }
         }
     }
