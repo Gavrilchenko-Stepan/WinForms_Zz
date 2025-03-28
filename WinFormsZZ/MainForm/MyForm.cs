@@ -58,5 +58,21 @@ namespace MainForm
                 textBoxOutput.Text = ticketGenerator.FormatTickets(tickets);
             }
         }
+
+        private void toolStripButton2_Click(object sender, EventArgs e)
+        {
+            EditQuestionsForm editForm = new EditQuestionsForm();
+
+            editForm.questions = questionManager.Questions; // Передача списка вопросов в форму редактирования
+
+            DialogResult result = editForm.ShowDialog(this);
+
+            if (result == DialogResult.OK)
+            {
+                questionManager.Questions = editForm.currentQuestions; // Обновление списка вопросов после закрытия формы редактирования
+            }
+
+            editForm.Dispose();
+        }
     }
 }

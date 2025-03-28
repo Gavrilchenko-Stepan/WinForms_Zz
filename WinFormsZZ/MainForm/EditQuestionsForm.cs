@@ -13,21 +13,23 @@ namespace MainForm
 {
     public partial class EditQuestionsForm: Form
     {
-        private List<Question> questions;
+        public List<Question> questions;
 
         private string[] categories = { "знать", "уметь", "владеть" };
 
         private string selectedCategory;
 
-        private List<Question> currentQuestions;
+        public List<Question> currentQuestions;
         public EditQuestionsForm()
         {
             InitializeComponent();
+            InitCategories();
+            UpdateCurrentQuestions(null);
+            DisplayQuestions(currentQuestions);
         }
 
         private void InitCategories()
         {
-            // Заполняем CheckedListBox категориями
             checkedListBox1.Items.Clear();
             foreach (var category in categories)
             {
@@ -58,7 +60,14 @@ namespace MainForm
             }
             else
             {
-                currentQuestions = questions.ToList();
+                if (questions != null)
+                {
+                    currentQuestions = questions.ToList();
+                }
+                else
+                {
+                    currentQuestions = new List<Question>();
+                }
             }
         }
 
@@ -69,7 +78,7 @@ namespace MainForm
             // Отображаем вопросы текущей категории
             foreach (var question in questions)
             {
-                textBox1.AppendText($"{question.Text}\n\n");
+                textBox1.AppendText($"{question.Text}{Environment.NewLine}{Environment.NewLine}");
             }
         }
 
