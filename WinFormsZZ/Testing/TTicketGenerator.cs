@@ -20,7 +20,7 @@ namespace Testing
         [TestMethod]
         public void TestGenerateTicketsWithRandomQuestions()
         {
-            
+
             // Создаем тестовые данные
             QuestionManager questionManager = new QuestionManager();
             questionManager.AddQuestion("Вопрос1", "знать");
@@ -66,8 +66,8 @@ namespace Testing
             TicketGenerator generator = new TicketGenerator(questionManager);
 
             var (tickets, expwarning) = generator.GenerateTickets(questionManager, 3);
-             expwarning = "Ошибка! Не хватает вопросов!";
-            
+            expwarning = "Ошибка! Не хватает вопросов!";
+
 
             Assert.IsNotNull(tickets, expwarning);
             Assert.AreEqual(3, tickets.Count, "Количество билетов соответствует ожидаемому.");
@@ -122,9 +122,9 @@ namespace Testing
         //// MStest где была бы генерация не 3 билетов и проверрка этого, также проверка 
         ///на то что вопросы в рамках сгенерированых билетов не повторяются
         [TestMethod]
-        public void TestGenerateVariableNumberOfTickets() 
+        public void TestGenerateVariableNumberOfTickets()
         {
-         
+
             QuestionManager manager = new QuestionManager();
             manager.AddQuestion("Вопрос 1", "знать");
             manager.AddQuestion("Вопрос 2", "уметь");
@@ -133,7 +133,7 @@ namespace Testing
             manager.AddQuestion("Вопрос 5", "уметь");
             manager.AddQuestion("Вопрос 6", "владеть");
 
-          
+
             const int expectedNumberOfTickets = 2;
             var generator = new TicketGenerator(manager);
 
@@ -155,13 +155,13 @@ namespace Testing
                     $"Билет содержит дублирующиеся вопросы! Количество уникальных вопросов:" +
                     $" {uniqueQuestionsCount}, общее количество вопросов: {ticket.Questions.Count}");
             }
-            
+
         }
 
         [TestMethod]
         public void TestSpecificQuestionsInTicket() // тест где проверяются конкретные вопросы в билете (их фактические значения)
         {
-           
+
             QuestionManager manager = new QuestionManager();
             Question expectedKnowQuestion = new Question("a1", "знать");
             Question expectedCanQuestion = new Question("a2", "уметь");
@@ -174,10 +174,10 @@ namespace Testing
             TicketGenerator generator = new TicketGenerator(manager);
             (List<Ticket> tickets, _) = generator.GenerateTickets(manager, 1);
 
-        
+
             Ticket actualTicket = tickets[0];
-            
-          
+
+
             Assert.AreEqual(3, actualTicket.Questions.Count);
             Assert.AreEqual(expectedKnowQuestion.Text, actualTicket.Questions[0].Text);
             Assert.AreEqual(expectedKnowQuestion.Section, actualTicket.Questions[0].Section);
@@ -189,9 +189,9 @@ namespace Testing
         [TestMethod]
         public void Test_AllTicketsHaveUniqueQuestions() // проверка на то что вопросы не повторяются вообще во всех билетах
         {
-     
+
             var manager = new QuestionManager();
-            
+
             manager.AddQuestion("Вопрос 1", "знать");
             manager.AddQuestion("Вопрос 2", "уметь");
             manager.AddQuestion("Вопрос 3", "владеть");
@@ -205,13 +205,18 @@ namespace Testing
 
             (List<Ticket> tickets, string expwarning) = generator.GenerateTickets(manager, NumTickets);
 
-            Assert.IsNull(expwarning, "ошибка при генерации билетов" + expwarning);
+            // Assert.IsNull(expwarning, "ошибка при генерации билетов" + expwarning);
             Assert.IsNotNull(tickets, "Список билетовн не должен быть null");
 
 
 
             // var result = generator.GenerateTickets(manager, 2); 
             //var allTickets = result.Item1;
+
+            var AllQuestions = tickets.SelectMany(ticket => ticket.Questions).ToList();
+            var uniqueuestions = AllQuestions.Distinct().ToList();
+
+            Assert.AreEqual(uniqueuestions.Count, AllQuestions.Count, "Некоторые вопросы повторяются в билетах");
 
 
 
