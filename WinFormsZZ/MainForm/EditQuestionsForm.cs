@@ -15,97 +15,67 @@ namespace MainForm
     {
         public List<Question> questions;
 
-        private string[] categories = { "знать", "уметь", "владеть" };
-
-        private string selectedCategory;
-
-        public List<Question> currentQuestions;
-        public EditQuestionsForm()
+        public EditQuestionsForm(List<Question> questions)
         {
             InitializeComponent();
-            InitCategories();
-            UpdateCurrentQuestions(null);
-            DisplayQuestions(currentQuestions);
-        }
+            this.questions = questions.ToList();
 
-        private void InitCategories()
-        {
-            checkedListBox1.Items.Clear();
-            foreach (var category in categories)
+            // Заполнение списка категорий
+            listBoxCategories.Items.AddRange(new[] { "знать", "уметь", "владеть" });
+
+            // Установка первой категории активной
+            if (listBoxCategories.Items.Count > 0)
             {
-                checkedListBox1.Items.Add(category, false);
+                listBoxCategories.SelectedIndex = 0;
             }
+
+            this.questions = questions;
         }
 
-        private void checkedListBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void DisplayQuestionsByCategory(string category)
         {
-            selectedCategory = checkedListBox1.CheckedItems.Cast<string>().FirstOrDefault();
-            UpdateCurrentQuestions(selectedCategory);
-            DisplayQuestions(currentQuestions);
-        }
+            // Очистка RichTextBox перед загрузкой новых вопросов
+            textBoxQuestions.Clear();
 
-        private void UpdateCurrentQuestions(string category)
-        {
-            currentQuestions = new List<Question>();
+            textBoxQuestions.AppendText($"Категория: {category}\n");
+            int questionNumber = 1;
 
-            if (category != null)
+            // Выборка вопросов по выбранной категории
+            foreach (var question in questions.Where(q => q.Section == category))
             {
-                foreach (var question in questions)
-                {
-                    if (question.Section == category)
-                    {
-                        currentQuestions.Add(question);
-                    }
-                }
+                textBoxQuestions.AppendText($"\t{questionNumber}. {question.Text}\n");
+                questionNumber++;
             }
-            else
-            {
-                if (questions != null)
-                {
-                    currentQuestions = questions.ToList();
-                }
-                else
-                {
-                    currentQuestions = new List<Question>();
-                }
-            }
+            textBoxQuestions.AppendText("\n");
         }
 
-        private void DisplayQuestions(List<Question> questions)
+        private void EditQuestionsForm_Load(object sender, EventArgs e)
         {
-            textBox1.Text = "";
-
-            // Отображаем вопросы текущей категории
-            foreach (var question in questions)
+            if (listBoxCategories.SelectedItem != null)
             {
-                textBox1.AppendText($"{question.Text}{Environment.NewLine}{Environment.NewLine}");
+                string selectedCategory = listBoxCategories.SelectedItem.ToString();
+                DisplayQuestionsByCategory(selectedCategory);
             }
         }
 
         private void buttonОК_Click(object sender, EventArgs e)
         {
-            SaveChanges();
+            this.DialogResult = DialogResult.OK;
             Close();
         }
 
         private void buttonCancel_Click(object sender, EventArgs e)
         {
+            this.DialogResult = DialogResult.Cancel;
             Close();
         }
 
-        void SaveChanges()
+        private void listBoxCategories_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string[] updatedQuestions = textBox1.Text.Split(new[] { "\r\n\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-            // Обновляем тексты вопросов в списке currentQuestions
-            for (int i = 0; i < Math.Min(updatedQuestions.Length, currentQuestions.Count); i++)
+            if (listBoxCategories.SelectedItem != null)
             {
-                currentQuestions[i].Text = updatedQuestions[i];
-            }
-
-            for (int i = 0; i < currentQuestions.Count; i++)
-            {
-                questions[i].Text = currentQuestions[i].Text;
+                string selectedCategory = listBoxCategories.SelectedItem.ToString();
+                DisplayQuestionsByCategory(selectedCategory);
             }
         }
     }

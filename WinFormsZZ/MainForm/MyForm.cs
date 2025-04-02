@@ -61,15 +61,14 @@ namespace MainForm
 
         private void toolStripButton2_Click(object sender, EventArgs e)
         {
-            EditQuestionsForm editForm = new EditQuestionsForm();
-
-            editForm.questions = questionManager.Questions; // Передача списка вопросов в форму редактирования
+            EditQuestionsForm editForm = new EditQuestionsForm(questionManager.Questions); // Передача копии списка вопросов в форму редактирования
 
             DialogResult result = editForm.ShowDialog(this);
 
             if (result == DialogResult.OK)
             {
-                questionManager.Questions = editForm.currentQuestions; // Обновление списка вопросов после закрытия формы редактирования
+                // Обновляем список вопросов в QuestionManager с учетом сделанных изменений
+                questionManager.Questions = editForm.questions;
             }
 
             editForm.Dispose();
