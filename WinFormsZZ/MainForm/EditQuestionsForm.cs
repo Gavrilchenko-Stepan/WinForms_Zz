@@ -21,7 +21,7 @@ namespace MainForm
             this.questions = questions.ToList();
 
             // Заполнение списка категорий
-            listBoxCategories.Items.AddRange(new[] { "знать", "уметь", "владеть" });
+            listBoxCategories.Items.AddRange(new[] { "Знать", "Уметь", "Владеть" });
 
             // Установка первой категории активной
             if (listBoxCategories.Items.Count > 0)

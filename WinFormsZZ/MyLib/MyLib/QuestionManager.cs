@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace MyLib
@@ -10,45 +11,61 @@ namespace MyLib
     {
         // Список всех вопросов
         public List<Question> Questions { get; set; } = new List<Question>();
+        public string _filename;
+        public QuestionManager(string filename)
+        {
+            _filename = filename;
+        }
 
         // Добавление нового вопроса
         public void AddQuestion(string text, string section)
         {
             Questions.Add(new Question(text, section));
+            File.AppendAllLines(_filename, new List<string> { $"{section} | {text}" });
+            Console.WriteLine($"Вопрос '{text}' добавлен в раздел '{section}'.");
         }
 
         // Получение случайного вопроса из указанного раздела
         public Question GetRandomQuestion(string section, List<Question> usedQuestions)
         {
-            // Выбираем доступные вопросы из нужного раздела, исключая использованные
-            List<Question> availableQuestions = Questions
-                .Where(q => q.Section == section && !usedQuestions.Contains(q))
-                .ToList();
+            var AvailableQuestions = new List<Question>();
+            foreach (var question in Questions)
+            {
+                if (question.Section == section && !usedQuestions.Contains(question))
+                {
+                    AvailableQuestions.Add(question);
+                }
+            }
 
-            // Если доступных вопросов нет, возвращаем null
-            if (availableQuestions.Count == 0)
+            if (AvailableQuestions.Count == 0)
             {
                 return null;
             }
-
-            // Выбираем случайный вопрос из доступных
             Random rnd = new Random();
-            int index = rnd.Next(availableQuestions.Count);
-            return availableQuestions[index];
+            int index = rnd.Next(AvailableQuestions.Count);
+
+            return AvailableQuestions[index];
         }
 
         // Проверка наличия достаточного количества вопросов для генерации билетов
         public bool HasEnoughQuestions(int numTickets)
         {
-            // Проверяем наличие необходимого количества вопросов в каждом разделе
-            List<string> sections = new List<string> { "знать", "уметь", "владеть" };
-            foreach (string sec in sections)
+            var sections = new List<string> { "знать", "уметь", "владеть" };
+            foreach (var section in sections)
             {
-                int count = Questions.Count(q => q.Section == sec);
+                int count = 0;
+                foreach (var question in Questions)
+                {
+                    if (question.Section == section)
+                    {
+                        count++;
+                    }
+                }
                 if (count < numTickets)
                 {
                     return false;
                 }
+
             }
             return true;
         }
