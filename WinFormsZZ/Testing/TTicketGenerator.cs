@@ -19,7 +19,11 @@ namespace Testing
     public class TTicketGenerator
     {
         [TestMethod]
-        public void TestGenerateTicketsWithRandomQuestions()
+        [DataRow(1, true)]  // 1 билет - должен успешно сгенерироваться
+        [DataRow(2, true)]  // 2 билета - должен успешно сгенерироваться
+        [DataRow(3, true)]  // 3 билета - должен успешно сгенерироваться (максимум)
+        [DataRow(4, false)] // 4 билета - должна быть ошибка (превышение лимита)
+        public void TestGenerateTicketsWithRandomQuestions(int numberOfTickets, bool shouldSucceed)
         {
             // Создаем временный файл для теста
             string tempFile = Path.GetTempFileName();
@@ -42,39 +46,59 @@ namespace Testing
                 TicketGenerator generator = new TicketGenerator(questionManager);
 
                 // Генерация билетов
-                var (tickets, errorMessage) = generator.GenerateTickets(questionManager, 3);
+                var (tickets, errorMessage) = generator.GenerateTickets(questionManager, numberOfTickets);
 
-                // Проверка базовых условий
-                Assert.IsNotNull(tickets, "Билеты должны быть созданы");
-                Assert.IsTrue(string.IsNullOrEmpty(errorMessage), "Не должно быть сообщения об ошибке");
-                Assert.AreEqual(3, tickets.Count, "Количество билетов должно соответствовать запрошенному");
-
-                // Собираем все использованные вопросы для проверки уникальности
-                HashSet<Question> usedQuestions = new HashSet<Question>();
-
-                foreach (Ticket ticket in tickets)
+                if (shouldSucceed)
                 {
-                    // Проверка структуры билета
-                    Assert.AreEqual(3, ticket.Questions.Count, "Каждый билет должен содержать 3 вопроса");
+                    // Проверка успешной генерации
+                    Assert.IsNotNull(tickets, $"Для {numberOfTickets} билетов: список билетов не должен быть null");
+                    Assert.IsTrue(string.IsNullOrEmpty(errorMessage),
+                        $"Для {numberOfTickets} билетов: не должно быть ошибки ({errorMessage})");
+                    Assert.AreEqual(numberOfTickets, tickets.Count,
+                        $"Для {numberOfTickets} билетов: количество не соответствует");
 
-                    // Проверка порядка секций
-                    Assert.AreEqual("знать", ticket.Questions[0].Section, "Первый вопрос должен быть из секции 'знать'");
-                    Assert.AreEqual("уметь", ticket.Questions[1].Section, "Второй вопрос должен быть из секции 'уметь'");
-                    Assert.AreEqual("владеть", ticket.Questions[2].Section, "Третий вопрос должен быть из секции 'владеть'");
+                    // Собираем все использованные вопросы для проверки уникальности
+                    HashSet<Question> usedQuestions = new HashSet<Question>();
 
-                    // Проверка уникальности вопросов в билетах
-                    foreach (var question in ticket.Questions)
+                    foreach (Ticket ticket in tickets)
                     {
-                        Assert.IsFalse(usedQuestions.Contains(question), "Вопросы не должны повторяться в разных билетах");
-                        usedQuestions.Add(question);
+                        // Проверка структуры билета
+                        Assert.AreEqual(3, ticket.Questions.Count,
+                            $"Для {numberOfTickets} билетов: каждый билет должен содержать 3 вопроса");
+
+                        // Проверка порядка секций
+                        Assert.AreEqual("знать", ticket.Questions[0].Section,
+                            "Первый вопрос должен быть из секции 'знать'");
+                        Assert.AreEqual("уметь", ticket.Questions[1].Section,
+                            "Второй вопрос должен быть из секции 'уметь'");
+                        Assert.AreEqual("владеть", ticket.Questions[2].Section,
+                            "Третий вопрос должен быть из секции 'владеть'");
+
+                        // Проверка уникальности вопросов в билетах
+                        foreach (var question in ticket.Questions)
+                        {
+                            Assert.IsFalse(usedQuestions.Contains(question),
+                                $"Вопрос '{question.Text}' повторяется в разных билетах");
+                            usedQuestions.Add(question);
+                        }
+                    }
+
+                    // Дополнительная проверка: все вопросы должны быть из исходного списка
+                    foreach (var question in usedQuestions)
+                    {
+                        Assert.IsTrue(questionManager.Questions.Contains(question),
+                            $"Вопрос '{question.Text}' не найден в исходном списке");
                     }
                 }
-
-                // Дополнительная проверка - все вопросы должны быть из исходного списка
-                foreach (var question in usedQuestions)
+                else
                 {
-                    Assert.IsTrue(questionManager.Questions.Contains(question),
-                        "Все использованные вопросы должны быть из исходного списка");
+                    // Проверка обработки ошибки
+                    Assert.IsNull(tickets,
+                        $"Для {numberOfTickets} билетов: при ошибке список должен быть null");
+                    Assert.IsFalse(string.IsNullOrEmpty(errorMessage),
+                        $"Для {numberOfTickets} билетов: должно быть сообщение об ошибке");
+                    Assert.AreEqual("Ошибка: недостаточно вопросов для генерации билетов!", errorMessage,
+                        "Неверное сообщение об ошибке");
                 }
             }
             finally
@@ -133,7 +157,7 @@ namespace Testing
             }
         }
         [TestMethod]
-        public void TestGenerationZeroTicket()
+        public void TestGenerationZeroTicket() //тест-кейс для проверки генерации 0 билетов
         {
             // Создаем временный файл для теста
             string tempFile = Path.GetTempFileName();
@@ -178,7 +202,7 @@ namespace Testing
         }
 
         [TestMethod]
-        public void TestGenerateTicketsWithoutAnyQuestions()
+        public void TestGenerateTicketsWithoutAnyQuestions() //тест-кейс для проверки генерации билетов без вопросов:
         {
             // Создаем временный файл (пустой)
             string tempFile = Path.GetTempFileName();
@@ -292,7 +316,7 @@ namespace Testing
         }
 
         [TestMethod]
-        public void TestSpecificQuestionsInTicket()
+        public void TestSpecificQuestionsInTicket()//тест-кейса для проверки конкретных вопросов в билете:
         {
             // Создаем временный файл для изоляции теста
             string tempFile = Path.GetTempFileName();
@@ -360,7 +384,7 @@ namespace Testing
             }
         }
         [TestMethod]
-        public void Test_AllTicketsHaveUniqueQuestions()
+        public void Test_AllTicketsHaveUniqueQuestions()//тест-кейс для проверки уникальности вопросов во всех билетах:
         {
             // Создаем временный файл для изоляции теста
             string tempFile = Path.GetTempFileName();
