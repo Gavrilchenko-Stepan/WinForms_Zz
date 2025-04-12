@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.IO;
+using Microsoft.VisualBasic;
+using System.Globalization;
 
 namespace MainForm
 {
@@ -20,45 +22,129 @@ namespace MainForm
         public Form1()
         {
             InitializeComponent();
+            listBoxCategories.SelectedIndexChanged += ListBoxCategories_SelectedIndexChanged;
+            toolStripButton2.Click += ToolStripButton2_Click;
         }
-        private void LoadQuestions(string filePath)
+
+        private void ToolStripButton2_Click(object sender, EventArgs e)
         {
-            try
+            // Проверяем, выбран ли вопрос
+            if (listBoxQuestions.SelectedIndex == -1)
             {
-                // Проверка файла на ошибки
-                if (LoadQuestionsFromFile.CheckFileForErrors(filePath, out var errors))
-                {
-                    questionManager = new QuestionManager(filePath);
-                    LoadQuestionsFromFile.TheQuestionLoader(questionManager);
+                MessageBox.Show("Выберите вопрос для редактирования");
+                return;
+            }
 
-                    MessageBox.Show($"Успешно загружено {questionManager.Questions.Count} вопросов.",
-                                  "Загрузка завершена",
-                                  MessageBoxButtons.OK,
-                                  MessageBoxIcon.Information);
-                }
-                else
-                {
-                    // Показываем ошибки пользователю
-                    var errorMessage = new StringBuilder();
-                    errorMessage.AppendLine("Найдены ошибки в файле вопросов:");
-                    foreach (var error in errors)
-                    {
-                        errorMessage.AppendLine($"- {error}");
-                    }
-                    errorMessage.AppendLine("\nПожалуйста, исправьте ошибки и попробуйте снова.");
+            // Получаем текст вопроса (без номера)
+            string currentText = listBoxQuestions.SelectedItem.ToString();
+            if (currentText.Contains(":"))
+                currentText = currentText.Split(':')[1].Trim();
 
-                    MessageBox.Show(errorMessage.ToString(),
-                                  "Ошибки в файле вопросов",
-                                  MessageBoxButtons.OK,
-                                  MessageBoxIcon.Error);
+            // Диалог редактирования через InputBox
+            string newText = Microsoft.VisualBasic.Interaction.InputBox(
+                "Редактирование вопроса:",  // Заголовок
+                "Введите новый текст",       // Подсказка
+                currentText,                // Текст по умолчанию
+                -1, -1                      // Позиция окна (центр экрана)
+            );
+
+            // Если нажали OK и ввели текст
+            if (!string.IsNullOrEmpty(newText) && newText != currentText)
+            {
+                // Обновляем данные
+                string category = listBoxCategories.SelectedItem.ToString();
+                int selectedIndex = listBoxQuestions.SelectedIndex;
+
+                var question = questionManager.Questions
+                    .FirstOrDefault(q => q.Section.Equals(category, StringComparison.OrdinalIgnoreCase)
+                                 && q.Text.Equals(currentText));
+
+                if (question != null)
+                {
+                    question.Text = newText;
+
+                    // Сохраняем в файл
+                    File.WriteAllLines(questionsFilePath,
+                        questionManager.Questions.Select(q => $"{q.Section}|{q.Text}"));
+
+                    // Обновляем отображение
+                    DisplayQuestionsByCategory(category);
+                    listBoxQuestions.SelectedIndex = selectedIndex;
                 }
             }
-            catch (Exception ex)
+        }
+
+        private void ListBoxCategories_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxCategories.SelectedItem != null && questionManager != null)
             {
-                MessageBox.Show($"Ошибка при загрузке файла: {ex.Message}",
-                              "Ошибка",
-                              MessageBoxButtons.OK,
-                              MessageBoxIcon.Error);
+                string selectedCategory = listBoxCategories.SelectedItem.ToString();
+                DisplayQuestionsByCategory(selectedCategory);
+            }
+        }
+
+        /*private void LoadQuestions(string filePath)
+{
+   try
+   {
+       // Проверка файла на ошибки
+       if (LoadQuestionsFromFile.CheckFileForErrors(filePath, out var errors))
+       {
+           questionManager = new QuestionManager(filePath);
+           LoadQuestionsFromFile.TheQuestionLoader(questionManager);
+
+           UpdateCategoriesList();
+
+           MessageBox.Show($"Успешно загружено {questionManager.Questions.Count} вопросов.",
+                         "Загрузка завершена",
+                         MessageBoxButtons.OK,
+                         MessageBoxIcon.Information);
+       }
+       else
+       {
+           // Показываем ошибки пользователю
+           var errorMessage = new StringBuilder();
+           errorMessage.AppendLine("Найдены ошибки в файле вопросов:");
+           foreach (var error in errors)
+           {
+               errorMessage.AppendLine($"- {error}");
+           }
+           errorMessage.AppendLine("\nПожалуйста, исправьте ошибки и попробуйте снова.");
+
+           MessageBox.Show(errorMessage.ToString(),
+                         "Ошибки в файле вопросов",
+                         MessageBoxButtons.OK,
+                         MessageBoxIcon.Error);
+       }
+   }
+   catch (Exception ex)
+   {
+       MessageBox.Show($"Ошибка при загрузке файла: {ex.Message}",
+                     "Ошибка",
+                     MessageBoxButtons.OK,
+                     MessageBoxIcon.Error);
+   }
+}*/
+
+        private void UpdateCategoriesList()
+        {
+            listBoxCategories.Items.Clear();
+
+            if (questionManager != null && questionManager.Questions.Count > 0)
+            {
+                // Получаем уникальные категории из вопросов
+                var categories = questionManager.Questions
+                .Select(q => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(q.Section.ToLower()))
+                .Distinct()
+                .ToList();
+
+                listBoxCategories.Items.AddRange(categories.ToArray());
+
+                // Если есть категории, выбираем первую
+                if (listBoxCategories.Items.Count > 0)
+                {
+                    listBoxCategories.SelectedIndex = 0;
+                }
             }
         }
 
@@ -71,6 +157,8 @@ namespace MainForm
                 {
                     questionManager = new QuestionManager(filePath);
                     LoadQuestionsFromFile.TheQuestionLoader(questionManager);
+
+                    UpdateCategoriesList();
 
                     MessageBox.Show($"Успешно загружено {questionManager.Questions.Count} вопросов.",
                         "Загрузка завершена",
@@ -155,56 +243,6 @@ namespace MainForm
             }
         }
 
-        private void toolStripButton2_Click(object sender, EventArgs e)
-        {
-            if (questionManager == null || questionManager.Questions.Count == 0)
-            {
-                MessageBox.Show("Вопросы не загружены. Пожалуйста, загрузите вопросы сначала.",
-                    "Ошибка",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                return;
-            }
-
-            EditQuestionsForm editForm = new EditQuestionsForm(questionManager.Questions);
-
-            if (editForm.ShowDialog(this) == DialogResult.OK)
-            {
-                questionManager.Questions = editForm.questions;
-
-                // Сохраняем изменения обратно в файл
-                try
-                {
-                    File.WriteAllLines(questionsFilePath,
-                        questionManager.Questions.Select(q => $"{q.Section}|{q.Text}"));
-
-                    MessageBox.Show("Изменения успешно сохранены.",
-                        "Сохранено",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Information);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка при сохранении изменений: {ex.Message}",
-                        "Ошибка",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                }
-            }
-
-            editForm.Dispose();
-        }
-
-        private void toolStripButton3_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void файлToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void загрузитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -216,8 +254,26 @@ namespace MainForm
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     questionsFilePath = openFileDialog.FileName;
-                    LoadQuestionsFile(questionsFilePath);
+                    if (LoadQuestionsFile(questionsFilePath))
+                    {
+                        // После успешной загрузки обновляем список категорий
+                        UpdateCategoriesList();
+                    }
                 }
+            }
+        }
+
+        private void DisplayQuestionsByCategory(string category)
+        {
+            listBoxQuestions.Items.Clear();
+
+            var categoryQuestions = questionManager.Questions
+                .Where(q => q.Section.Equals(category, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            for (int i = 0; i < categoryQuestions.Count; i++)
+            {
+                listBoxQuestions.Items.Add($"Вопрос {i + 1}: {categoryQuestions[i].Text}");
             }
         }
     }
