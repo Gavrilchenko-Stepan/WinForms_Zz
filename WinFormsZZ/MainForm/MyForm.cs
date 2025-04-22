@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.IO;
+using System.Reflection;
 using Microsoft.VisualBasic;
 using System.Globalization;
 
@@ -148,49 +149,6 @@ namespace MainForm
             }
         }
 
-        /*private void LoadQuestions(string filePath)
-{
-   try
-   {
-       // Проверка файла на ошибки
-       if (LoadQuestionsFromFile.CheckFileForErrors(filePath, out var errors))
-       {
-           questionManager = new QuestionManager(filePath);
-           LoadQuestionsFromFile.TheQuestionLoader(questionManager);
-
-           UpdateCategoriesList();
-
-           MessageBox.Show($"Успешно загружено {questionManager.Questions.Count} вопросов.",
-                         "Загрузка завершена",
-                         MessageBoxButtons.OK,
-                         MessageBoxIcon.Information);
-       }
-       else
-       {
-           // Показываем ошибки пользователю
-           var errorMessage = new StringBuilder();
-           errorMessage.AppendLine("Найдены ошибки в файле вопросов:");
-           foreach (var error in errors)
-           {
-               errorMessage.AppendLine($"- {error}");
-           }
-           errorMessage.AppendLine("\nПожалуйста, исправьте ошибки и попробуйте снова.");
-
-           MessageBox.Show(errorMessage.ToString(),
-                         "Ошибки в файле вопросов",
-                         MessageBoxButtons.OK,
-                         MessageBoxIcon.Error);
-       }
-   }
-   catch (Exception ex)
-   {
-       MessageBox.Show($"Ошибка при загрузке файла: {ex.Message}",
-                     "Ошибка",
-                     MessageBoxButtons.OK,
-                     MessageBoxIcon.Error);
-   }
-}*/
-
         private void UpdateCategoriesList()
         {
             listBoxCategories.Items.Clear();
@@ -297,7 +255,7 @@ namespace MainForm
             textBoxOutput.Text = _ticketGenerator.FormatTickets(tickets);
         }
 
-        private void UpdateTicketsDisplay()
+        /*private void UpdateTicketsDisplay()
         {
             if (_currentTickets == null || _currentTickets.Count == 0)
             {
@@ -306,7 +264,7 @@ namespace MainForm
             }
 
             textBoxOutput.Text = _ticketGenerator.FormatTickets(_currentTickets);
-        }
+        }*/
 
         private void загрузитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -339,6 +297,69 @@ namespace MainForm
             for (int i = 0; i < categoryQuestions.Count; i++)
             {
                 listBoxQuestions.Items.Add($"Вопрос {i + 1}: {categoryQuestions[i].Text}");
+            }
+        }
+
+        private void сохранитьКакToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_currentTickets == null || _currentTickets.Count == 0)
+            {
+                MessageBox.Show("Нет билетов для сохранения!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Word Documents|*.docx";
+            saveFileDialog.Title = "Сохранить билеты";
+            saveFileDialog.DefaultExt = "docx";
+            saveFileDialog.AddExtension = true;
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // Получаем встроенный шаблон из ресурсов
+                    var assembly = Assembly.GetExecutingAssembly();
+                    const string templateResourceName = "MainForm.ШАБЛОН.docx"; // Убедитесь, что имя совпадает с ресурсом
+
+                    using (Stream templateStream = assembly.GetManifestResourceStream(templateResourceName))
+                    {
+                        if (templateStream == null)
+                        {
+                            MessageBox.Show("Встроенный шаблон не найден!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+
+                        // Сохраняем временную копию шаблона
+                        string tempPath = Path.GetTempFileName();
+                        using (FileStream fileStream = File.Create(tempPath))
+                        {
+                            templateStream.CopyTo(fileStream);
+                        }
+
+                        // Генерируем документ
+                        WordTemplateFiller.GenerateFromTemplate(tempPath, saveFileDialog.FileName, _currentTickets);
+
+                        // Удаляем временный файл
+                        File.Delete(tempPath);
+                    }
+
+                    MessageBox.Show($"Билеты успешно сохранены в файл: {saveFileDialog.FileName}", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    // Пытаемся открыть документ
+                    try
+                    {
+                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(saveFileDialog.FileName) { UseShellExecute = true });
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Документ сохранён, но не удалось открыть его: {ex.Message}", "Информация", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка при сохранении билетов: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
     }
