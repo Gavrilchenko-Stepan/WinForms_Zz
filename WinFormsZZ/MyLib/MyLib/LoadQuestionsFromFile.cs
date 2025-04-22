@@ -47,7 +47,7 @@ namespace MyLib
                 var parts = line.Split('|');
                 if (parts.Length == 2)
                 {
-                    var section = parts[0].Trim();
+                    var section = parts[0].Trim().ToLower();
                     var text = parts[1].Trim();
 
                     if (string.IsNullOrEmpty(section)
@@ -55,6 +55,13 @@ namespace MyLib
                     {
                         errorCount++;
                         errorLines.Add($"Пустое значение в строке: {line}");
+                        continue;
+                    }
+
+                    if(!Question.ALL_SECTIONS.Contains(section))
+        {
+                        errorCount++;
+                        errorLines.Add($"Недопустимая категория '{section}' в строке: {line}");
                         continue;
                     }
 

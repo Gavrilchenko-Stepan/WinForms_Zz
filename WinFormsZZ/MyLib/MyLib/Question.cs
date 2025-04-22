@@ -8,13 +8,14 @@ namespace MyLib
 {
      public class Question
     {
-        // Текст вопроса
-        public string Text { get; set; }
+        public const string KNOW = "знать";
+        public const string ABLE = "уметь";
+        public const string MASTER = "владеть";
 
-        // Раздел вопроса ("знать", "уметь", "владеть")
+        public static readonly string[] ALL_SECTIONS = { KNOW, ABLE, MASTER };
+        public string Text { get; set; }
         public string Section { get; set; }
 
-        // Конструктор для создания объекта вопроса
         public Question(string text, string section)
         {
             Text = text;

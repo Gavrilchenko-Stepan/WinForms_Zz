@@ -155,15 +155,11 @@ namespace MainForm
 
             if (questionManager != null && questionManager.Questions.Count > 0)
             {
-                // Получаем уникальные категории из вопросов
-                var categories = questionManager.Questions
-                .Select(q => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(q.Section.ToLower()))
-                .Distinct()
-                .ToList();
+                // Добавляем категории с заглавной буквы
+                listBoxCategories.Items.Add(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Question.KNOW));
+                listBoxCategories.Items.Add(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Question.ABLE));
+                listBoxCategories.Items.Add(CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Question.MASTER));
 
-                listBoxCategories.Items.AddRange(categories.ToArray());
-
-                // Если есть категории, выбираем первую
                 if (listBoxCategories.Items.Count > 0)
                 {
                     listBoxCategories.SelectedIndex = 0;
@@ -289,14 +285,13 @@ namespace MainForm
         private void DisplayQuestionsByCategory(string category)
         {
             listBoxQuestions.Items.Clear();
-
-            var categoryQuestions = questionManager.Questions
+            var questions = questionManager.Questions
                 .Where(q => q.Section.Equals(category, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            for (int i = 0; i < categoryQuestions.Count; i++)
+            for (int i = 0; i < questions.Count; i++)
             {
-                listBoxQuestions.Items.Add($"Вопрос {i + 1}: {categoryQuestions[i].Text}");
+                listBoxQuestions.Items.Add($"{i + 1}. {questions[i].Text}");
             }
         }
 
@@ -360,6 +355,129 @@ namespace MainForm
                 {
                     MessageBox.Show($"Ошибка при сохранении билетов: {ex.Message}", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            }
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            if (listBoxCategories.SelectedIndex == -1)
+            {
+                MessageBox.Show("Пожалуйста, выберите категорию для добавления вопросов",
+                               "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string selectedCategory = listBoxCategories.SelectedItem.ToString().ToLower();
+
+            // Создаем форму для ввода нескольких вопросов
+            Form addQuestionsForm = new Form();
+            addQuestionsForm.Text = $"Добавить вопросы в категорию: {selectedCategory}";
+            addQuestionsForm.ClientSize = new Size(600, 400);
+            addQuestionsForm.StartPosition = FormStartPosition.CenterParent;
+            addQuestionsForm.FormBorderStyle = FormBorderStyle.FixedDialog;
+            addQuestionsForm.MaximizeBox = false;
+            addQuestionsForm.MinimizeBox = false;
+
+            // Многострочное текстовое поле с подсказкой
+            RichTextBox rtbQuestions = new RichTextBox();
+            rtbQuestions.Multiline = true;
+            rtbQuestions.Dock = DockStyle.Fill;
+            rtbQuestions.Font = new Font("Consolas", 11); // Моноширинный шрифт
+            rtbQuestions.AcceptsTab = true;
+            rtbQuestions.WordWrap = false; // Отключаем перенос слов
+            rtbQuestions.ScrollBars = RichTextBoxScrollBars.Both;
+
+            rtbQuestions.KeyDown += (senderKey, eKey) =>
+            {
+                if (eKey.KeyCode == Keys.Enter && !eKey.Shift)
+                {
+                    eKey.SuppressKeyPress = true;
+                    int pos = rtbQuestions.SelectionStart;
+                    rtbQuestions.Text = rtbQuestions.Text.Insert(pos, Environment.NewLine);
+                    rtbQuestions.SelectionStart = pos + Environment.NewLine.Length;
+                }
+            };
+            rtbQuestions.Text = "Введите вопросы, каждый с новой строки:\nПример 1\nПример 2\nПример 3";
+
+            // Очищаем подсказку при первом клике
+            rtbQuestions.Enter += (s, args) =>
+            {
+                if (rtbQuestions.Text.Contains("Введите вопросы"))
+                    rtbQuestions.Text = string.Empty;
+            };
+
+            // Кнопки
+            System.Windows.Forms.Button btnOk = new System.Windows.Forms.Button() { Text = "Добавить все", DialogResult = DialogResult.OK };
+            System.Windows.Forms.Button btnCancel = new System.Windows.Forms.Button() { Text = "Отмена", DialogResult = DialogResult.Cancel };
+
+            // Панель для кнопок внизу формы
+            Panel panel = new Panel();
+            panel.Dock = DockStyle.Bottom;
+            panel.Height = 50;
+            panel.Padding = new Padding(10);
+
+            btnOk.Anchor = btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnCancel.Location = new Point(panel.Width - btnCancel.Width - 10, 10);
+            btnOk.Location = new Point(btnCancel.Left - btnOk.Width - 10, 10);
+
+            // Добавляем элементы
+            panel.Controls.Add(btnCancel);
+            panel.Controls.Add(btnOk);
+            addQuestionsForm.Controls.Add(panel);
+            addQuestionsForm.Controls.Add(rtbQuestions);
+            addQuestionsForm.AcceptButton = btnOk;
+            addQuestionsForm.CancelButton = btnCancel;
+
+            if (addQuestionsForm.ShowDialog(this) == DialogResult.OK)
+            {
+                string[] allLines = rtbQuestions.Text.Split(
+                    new[] { "\r\n", "\r", "\n" },
+                     StringSplitOptions.RemoveEmptyEntries);
+
+                // Фильтруем пустые строки и строки-подсказки
+                var questions = allLines
+                    .Where(line => !string.IsNullOrWhiteSpace(line) &&
+                                  !line.Contains("Введите вопросы") &&
+                                  !line.StartsWith("Пример вопроса"))
+                    .Select(q => q.Trim())
+                    .ToList();
+                if (string.IsNullOrWhiteSpace(rtbQuestions.Text))
+                {
+                    MessageBox.Show("Не введено ни одного вопроса!",
+                                  "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                if (questions.Count == 0)
+                {
+                    MessageBox.Show("Не обнаружено корректных вопросов для добавления",
+                                  "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+
+                // Добавляем все вопросы
+                var addedQuestions = new List<string>();
+                int addedCount = 0;
+
+                foreach (var questionText in questions)
+                {
+                    if (questionManager.Questions.Any(q => q.Text.Equals(questionText) && q.Section.Equals(selectedCategory)))
+                    {
+                        // Вопрос уже существует
+                        continue;
+                    }
+                    questionManager.AddQuestion(questionText, selectedCategory);
+                    addedQuestions.Add(questionText);
+                    addedCount++;
+                }
+
+                // Обновляем интерфейс и сохраняем
+                DisplayQuestionsByCategory(selectedCategory);
+                File.WriteAllLines(questionsFilePath,
+                    questionManager.Questions.Select(q => $"{q.Section}|{q.Text}"));
+
+                MessageBox.Show($"Успешно добавлено {addedCount} из {questions.Count} вопросов!",
+                              "Результат", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }

@@ -20,9 +20,10 @@ namespace MyLib
         // Добавление нового вопроса
         public void AddQuestion(string text, string section)
         {
+            if (!Question.ALL_SECTIONS.Contains(section.ToLower()))
+                throw new ArgumentException("Неверная категория вопроса");
+
             Questions.Add(new Question(text, section));
-            File.AppendAllLines(_filename, new List<string> { $"{section} | {text}" });
-            Console.WriteLine($"Вопрос '{text}' добавлен в раздел '{section}'.");
         }
 
         // Получение случайного вопроса из указанного раздела
@@ -50,24 +51,22 @@ namespace MyLib
         // Проверка наличия достаточного количества вопросов для генерации билетов
         public bool HasEnoughQuestions(int numTickets)
         {
-            var sections = new List<string> { "знать", "уметь", "владеть" };
-            foreach (var section in sections)
+            foreach (var section in Question.ALL_SECTIONS)
             {
-                int count = 0;
-                foreach (var question in Questions)
-                {
-                    if (question.Section == section)
-                    {
-                        count++;
-                    }
-                }
+                int count = Questions.Count(q => q.Section == section);
                 if (count < numTickets)
                 {
                     return false;
                 }
-
             }
             return true;
+        }
+
+        public bool QuestionExists(string text, string section)
+        {
+            return Questions.Any(q =>
+                q.Text.Equals(text, StringComparison.OrdinalIgnoreCase) &&
+                q.Section.Equals(section, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

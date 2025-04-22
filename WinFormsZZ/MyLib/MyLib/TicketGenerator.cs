@@ -26,7 +26,7 @@ namespace MyLib
             for (int i = 0; i < numTickets; i++)
             {
                 Ticket ticket = new Ticket();
-                List<string> sections = new List<string> { "знать", "уметь", "владеть" };
+                List<string> sections = new List<string>(Question.ALL_SECTIONS);
 
                 foreach (string section in sections)
                 {
