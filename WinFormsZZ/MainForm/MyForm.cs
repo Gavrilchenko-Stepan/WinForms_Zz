@@ -18,10 +18,13 @@ namespace MainForm
     public partial class Form1 : Form
     {
         private QuestionManager questionManager;
+        private List<Ticket> _currentTickets;
         private string questionsFilePath;
+        private TicketGenerator _ticketGenerator;
         public Form1()
         {
             InitializeComponent();
+            _ticketGenerator = new TicketGenerator();
             listBoxCategories.SelectedIndexChanged += ListBoxCategories_SelectedIndexChanged;
             toolStripButton2.Click += ToolStripButton2_Click;
         }
@@ -101,13 +104,25 @@ namespace MainForm
                     return;
                 }
 
+                // Сохраняем старые вопросы для обновления билетов
+                var oldQuestions = new List<Question>(categoryQuestions);
+
+                // Обновляем вопросы
                 for (int i = 0; i < categoryQuestions.Count; i++)
                 {
                     categoryQuestions[i].Text = newQuestions[i];
                 }
 
+                // Сохраняем в файл
                 File.WriteAllLines(questionsFilePath,
                     questionManager.Questions.Select(q => $"{q.Section}|{q.Text}"));
+
+                // Обновляем билеты, если они есть
+                if (_currentTickets != null && _currentTickets.Count > 0)
+                {
+                    _ticketGenerator.UpdateTicketsQuestions(_currentTickets, questionManager);
+                    textBoxOutput.Text = _ticketGenerator.FormatTickets(_currentTickets);
+                }
 
                 DisplayQuestionsByCategory(category);
                 editForm.DialogResult = DialogResult.OK;
@@ -256,41 +271,41 @@ namespace MainForm
             }
 
             string input = toolStripTextBoxInput.Text;
-            int numTickets;
 
-            if (int.TryParse(input, out numTickets))
-            {
-                if (numTickets <= 0)
-                {
-                    MessageBox.Show("Число билетов должно быть положительным.",
-                        "Ошибка",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                    return;
-                }
-
-                TicketGenerator ticketGenerator = new TicketGenerator(questionManager);
-                var (tickets, message) = ticketGenerator.GenerateTickets(questionManager, numTickets);
-
-                if (tickets == null)
-                {
-                    MessageBox.Show(message,
-                        "Ошибка генерации билетов",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error);
-                }
-                else
-                {
-                    textBoxOutput.Text = ticketGenerator.FormatTickets(tickets);
-                }
-            }
-            else
+            if (!int.TryParse(input, out int numTickets) || numTickets <= 0)
             {
                 MessageBox.Show("Ошибка! Введите корректное число билетов.",
                     "Ошибка",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+                return;
             }
+
+            var (tickets, message) = _ticketGenerator.GenerateTickets(questionManager, numTickets);
+
+            if (tickets == null)
+            {
+                MessageBox.Show(message,
+                    "Ошибка генерации билетов",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return;
+            }
+
+            // Сохраняем ссылку на текущие билеты
+            _currentTickets = tickets;
+            textBoxOutput.Text = _ticketGenerator.FormatTickets(tickets);
+        }
+
+        private void UpdateTicketsDisplay()
+        {
+            if (_currentTickets == null || _currentTickets.Count == 0)
+            {
+                textBoxOutput.Clear();
+                return;
+            }
+
+            textBoxOutput.Text = _ticketGenerator.FormatTickets(_currentTickets);
         }
 
         private void загрузитьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -306,8 +321,8 @@ namespace MainForm
                     questionsFilePath = openFileDialog.FileName;
                     if (LoadQuestionsFile(questionsFilePath))
                     {
-                        // После успешной загрузки обновляем список категорий
-                        UpdateCategoriesList();
+                        // Устанавливаем questionManager после загрузки
+                        _ticketGenerator = new TicketGenerator(questionManager);
                     }
                 }
             }

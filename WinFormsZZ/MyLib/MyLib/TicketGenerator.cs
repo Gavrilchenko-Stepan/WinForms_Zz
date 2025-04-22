@@ -10,7 +10,7 @@ namespace MyLib
     public class TicketGenerator
     {
         private QuestionManager _questionManager;
-        public TicketGenerator(QuestionManager questionManager)
+        public TicketGenerator(QuestionManager questionManager = null)
         {
             _questionManager = questionManager;
         }
@@ -63,6 +63,28 @@ namespace MyLib
             }
 
             return outputBuilder.ToString();
+        }
+
+        public void UpdateTicketsQuestions(List<Ticket> tickets, QuestionManager questionManager)
+        {
+            if (tickets == null || questionManager == null) return;
+
+            foreach (var ticket in tickets)
+            {
+                for (int i = 0; i < ticket.Questions.Count; i++)
+                {
+                    var oldQuestion = ticket.Questions[i];
+                    // Находим вопрос с тем же текстом и разделом в обновленном списке
+                    var updatedQuestion = questionManager.Questions.FirstOrDefault(q =>
+                        q.Text == oldQuestion.Text && q.Section == oldQuestion.Section);
+
+                    if (updatedQuestion != null)
+                    {
+                        // Обновляем вопрос в билете
+                        ticket.Questions[i] = updatedQuestion;
+                    }
+                }
+            }
         }
     }
 }
