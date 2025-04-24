@@ -38,28 +38,36 @@ namespace MainForm
                 return;
             }
 
+            if (listBoxQuestions.SelectedIndex == -1)
+            {
+                MessageBox.Show("Выберите вопрос для редактирования");
+                return;
+            }
+
             string category = listBoxCategories.SelectedItem.ToString();
+            int questionIndex = listBoxQuestions.SelectedIndex;
 
             var categoryQuestions = questionManager.Questions
                 .Where(q => q.Section.Equals(category, StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-            // Создаем текстовое представление всех вопросов
-            StringBuilder sb = new StringBuilder();
-            foreach (var question in categoryQuestions)
+            if (questionIndex < 0 || questionIndex >= categoryQuestions.Count)
             {
-                sb.AppendLine(question.Text);
+                MessageBox.Show("Неверный индекс вопроса");
+                return;
             }
 
+            var questionToEdit = categoryQuestions[questionIndex];
+
             Form editForm = new Form();
-            editForm.Text = $"Редактирование категории: {category}";
-            editForm.ClientSize = new Size(600, 400); // Используем ClientSize вместо Size
+            editForm.Text = $"Редактирование вопроса: {questionToEdit.Text}";
+            editForm.ClientSize = new Size(400, 200);
             editForm.StartPosition = FormStartPosition.CenterScreen;
             editForm.FormBorderStyle = FormBorderStyle.FixedDialog;
             editForm.MaximizeBox = false;
             editForm.MinimizeBox = false;
 
-            // Сначала создаем кнопки
+            // Создаем кнопки
             System.Windows.Forms.Button btnSave = new System.Windows.Forms.Button();
             btnSave.Text = "Сохранить";
             btnSave.Size = new Size(100, 30);
@@ -71,12 +79,12 @@ namespace MainForm
             btnCancel.Font = new Font("Segoe UI", 9);
             btnCancel.DialogResult = DialogResult.Cancel;
 
-            // Затем создаем RichTextBox с учетом места для кнопок
+            // Создаем RichTextBox
             RichTextBox rtb = new RichTextBox();
             rtb.Location = new Point(10, 10);
             rtb.Size = new Size(editForm.ClientSize.Width - 20, editForm.ClientSize.Height - 60);
             rtb.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            rtb.Text = sb.ToString();
+            rtb.Text = questionToEdit.Text;
             rtb.Font = new Font("Segoe UI", 10);
             rtb.WordWrap = true;
             rtb.ScrollBars = RichTextBoxScrollBars.Vertical;
@@ -92,27 +100,18 @@ namespace MainForm
 
             btnSave.Click += (s, args) =>
             {
-                string[] allLines = rtb.Text.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
-                var newQuestions = allLines.Where(line => !string.IsNullOrWhiteSpace(line)).ToList();
-
-                if (newQuestions.Count != categoryQuestions.Count)
+                string newText = rtb.Text.Trim();
+                if (string.IsNullOrEmpty(newText))
                 {
-                    MessageBox.Show($"Ожидалось {categoryQuestions.Count} вопросов, получено {newQuestions.Count}.\n" +
-                                  "Количество вопросов не должно изменяться.",
-                                  "Ошибка",
-                                  MessageBoxButtons.OK,
-                                  MessageBoxIcon.Error);
+                    MessageBox.Show("Текст вопроса не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
 
-                // Сохраняем старые вопросы для обновления билетов
-                var oldQuestions = new List<Question>(categoryQuestions);
+                // Сохраняем старый текст для обновления билетов
+                string oldText = questionToEdit.Text;
 
-                // Обновляем вопросы
-                for (int i = 0; i < categoryQuestions.Count; i++)
-                {
-                    categoryQuestions[i].Text = newQuestions[i];
-                }
+                // Обновляем вопрос
+                questionToEdit.Text = newText;
 
                 // Сохраняем в файл
                 File.WriteAllLines(questionsFilePath,
@@ -146,6 +145,7 @@ namespace MainForm
             {
                 string selectedCategory = listBoxCategories.SelectedItem.ToString();
                 DisplayQuestionsByCategory(selectedCategory);
+                listBoxQuestions.SelectedIndex = -1; // Сбрасываем выбор вопроса при смене категории
             }
         }
 
@@ -289,6 +289,7 @@ namespace MainForm
         private void DisplayQuestionsByCategory(string category)
         {
             listBoxQuestions.Items.Clear();
+            listBoxQuestions.SelectedIndex = -1; // Сбрасываем выбор вопроса
 
             var categoryQuestions = questionManager.Questions
                 .Where(q => q.Section.Equals(category, StringComparison.OrdinalIgnoreCase))
