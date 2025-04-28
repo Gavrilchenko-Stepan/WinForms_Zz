@@ -305,5 +305,41 @@ namespace MainForm
                 }
             }
         }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            if (questionManager == null || string.IsNullOrEmpty(questionsFilePath))
+            {
+                MessageBox.Show("Сначала загрузите файл с вопросами!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (listBoxCategories.SelectedIndex == -1)
+            {
+                MessageBox.Show("Выберите категорию для добавления вопросов!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string selectedCategory = listBoxCategories.SelectedItem.ToString().ToLower();
+
+            using (var addForm = new AddQuestionForm(questionManager, questionsFilePath, selectedCategory))
+            {
+                if (addForm.ShowDialog() == DialogResult.OK)
+                {
+                    // Обновляем данные
+                    LoadQuestionsFromFile.TheQuestionLoader(questionManager);
+                    UpdateCategoriesList();
+                    DisplayQuestionsByCategory(selectedCategory);
+
+                    // Обновляем билеты, если они есть
+                    if (_currentTickets != null)
+                    {
+                        textBoxOutput.Text = _ticketGenerator.FormatTickets(_currentTickets);
+                    }
+                }
+            }
+        }
     }
 }
