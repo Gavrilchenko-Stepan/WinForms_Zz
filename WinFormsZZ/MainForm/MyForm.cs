@@ -59,83 +59,25 @@ namespace MainForm
 
             var questionToEdit = categoryQuestions[questionIndex];
 
-            Form editForm = new Form();
-            editForm.Text = $"Редактирование вопроса: {questionToEdit.Text}";
-            editForm.ClientSize = new Size(400, 200);
-            editForm.StartPosition = FormStartPosition.CenterScreen;
-            editForm.FormBorderStyle = FormBorderStyle.FixedDialog;
-            editForm.MaximizeBox = false;
-            editForm.MinimizeBox = false;
-
-            // Создаем кнопки
-            System.Windows.Forms.Button btnSave = new System.Windows.Forms.Button();
-            btnSave.Text = "Сохранить";
-            btnSave.Size = new Size(100, 30);
-            btnSave.Font = new Font("Segoe UI", 9);
-
-            System.Windows.Forms.Button btnCancel = new System.Windows.Forms.Button();
-            btnCancel.Text = "Отмена";
-            btnCancel.Size = new Size(100, 30);
-            btnCancel.Font = new Font("Segoe UI", 9);
-            btnCancel.DialogResult = DialogResult.Cancel;
-
-            // Создаем RichTextBox
-            RichTextBox rtb = new RichTextBox();
-            rtb.Location = new Point(10, 10);
-            rtb.Size = new Size(editForm.ClientSize.Width - 20, editForm.ClientSize.Height - 60);
-            rtb.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            rtb.Text = questionToEdit.Text;
-            rtb.Font = new Font("Segoe UI", 10);
-            rtb.WordWrap = true;
-            rtb.ScrollBars = RichTextBoxScrollBars.Vertical;
-
-            // Позиционируем кнопки
-            btnCancel.Location = new Point(editForm.ClientSize.Width - btnCancel.Width - 10,
-                                         editForm.ClientSize.Height - btnCancel.Height - 10);
-            btnSave.Location = new Point(btnCancel.Left - btnSave.Width - 10,
-                                        editForm.ClientSize.Height - btnSave.Height - 10);
-
-            btnCancel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            btnSave.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-
-            btnSave.Click += (s, args) =>
+            using (var editForm = new EditQuestionForm(
+                questionToEdit,
+                questionManager,
+                questionsFilePath,
+                _currentTickets,
+                _ticketGenerator))
             {
-                string newText = rtb.Text.Trim();
-                if (string.IsNullOrEmpty(newText))
+                if (editForm.ShowDialog() == DialogResult.OK && editForm.WasEdited)
                 {
-                    MessageBox.Show("Текст вопроса не может быть пустым", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
+                    // Обновляем отображение вопросов
+                    DisplayQuestionsByCategory(category);
+
+                    // Обновляем отображение билетов, если они есть
+                    if (_currentTickets != null && _currentTickets.Count > 0)
+                    {
+                        // Не нужно вызывать UpdateTicketsQuestions, так как мы изменили существующий объект
+                        textBoxOutput.Text = _ticketGenerator.FormatTickets(_currentTickets);
+                    }
                 }
-
-                // Сохраняем старый текст для обновления билетов
-                string oldText = questionToEdit.Text;
-
-                // Обновляем вопрос
-                questionToEdit.Text = newText;
-
-                // Сохраняем в файл
-                File.WriteAllLines(questionsFilePath,
-                    questionManager.Questions.Select(q => $"{q.Section}|{q.Text}"));
-
-                // Обновляем билеты, если они есть
-                if (_currentTickets != null && _currentTickets.Count > 0)
-                {
-                    _ticketGenerator.UpdateTicketsQuestions(_currentTickets, questionManager);
-                    textBoxOutput.Text = _ticketGenerator.FormatTickets(_currentTickets);
-                }
-
-                DisplayQuestionsByCategory(category);
-                editForm.DialogResult = DialogResult.OK;
-            };
-
-            // Добавляем элементы в правильном порядке
-            editForm.Controls.Add(rtb);
-            editForm.Controls.Add(btnSave);
-            editForm.Controls.Add(btnCancel);
-
-            if (editForm.ShowDialog() == DialogResult.OK)
-            {
-                DisplayQuestionsByCategory(category);
             }
         }
 
