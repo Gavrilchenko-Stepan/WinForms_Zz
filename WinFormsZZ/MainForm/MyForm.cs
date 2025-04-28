@@ -341,5 +341,97 @@ namespace MainForm
                 }
             }
         }
+
+        private void toolStripButton4_Click(object sender, EventArgs e)
+        {
+            if (questionManager == null)
+            {
+                MessageBox.Show("Вопросы не загружены!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            if (listBoxCategories.SelectedIndex == -1 || listBoxQuestions.SelectedIndex == -1)
+            {
+                MessageBox.Show("Выберите категорию и вопрос для удаления!", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Подтверждение удаления
+            var confirmResult = MessageBox.Show("Вы точно хотите удалить этот вопрос?", "Подтверждение",
+                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (confirmResult != DialogResult.Yes)
+                return;
+
+            try
+            {
+                string category = listBoxCategories.SelectedItem.ToString();
+                int questionIndex = listBoxQuestions.SelectedIndex;
+                var categoryQuestions = questionManager.Questions
+                    .Where(q => q.Section.Equals(category, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                if (questionIndex >= 0 && questionIndex < categoryQuestions.Count)
+                {
+                    var questionToRemove = categoryQuestions[questionIndex];
+
+                    // Проверяем, используется ли вопрос в билетах
+                    bool isUsedInTickets = _currentTickets != null &&
+                        _currentTickets.Any(t => t.Questions.Contains(questionToRemove));
+
+                    if (isUsedInTickets)
+                    {
+                        var ticketConfirmResult = MessageBox.Show("Этот вопрос используется в сгенерированных билетах!\n" +
+                            "Удалить его и перегенерировать билеты?",
+                            "Внимание", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+                        if (ticketConfirmResult != DialogResult.Yes)
+                            return;
+                    }
+
+                    // Удаляем вопрос
+                    questionManager.Questions.Remove(questionToRemove);
+                    File.WriteAllLines(questionsFilePath,
+                        questionManager.Questions.Select(q => $"{q.Section}|{q.Text}"));
+
+                    // Обновляем билеты, если они были сгенерированы
+                    if (_currentTickets != null)
+                    {
+                        if (isUsedInTickets)
+                        {
+                            // Полная перегенерация билетов
+                            var (newTickets, message) = _ticketGenerator.GenerateTickets(
+                                questionManager, _currentTickets.Count);
+
+                            if (newTickets != null)
+                            {
+                                _currentTickets = newTickets;
+                                textBoxOutput.Text = _ticketGenerator.FormatTickets(_currentTickets);
+                            }
+                        }
+                        else
+                        {
+                            // Точечное обновление билетов
+                            _ticketGenerator.UpdateTicketsQuestions(_currentTickets, questionManager);
+                            textBoxOutput.Text = _ticketGenerator.FormatTickets(_currentTickets);
+                        }
+                    }
+
+                    // Обновляем список вопросов
+                    DisplayQuestionsByCategory(category);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка: {ex.Message}", "Ошибка",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        public bool IsQuestionUsed(List<Ticket> tickets, Question question)
+        {
+            return tickets?.Any(t => t.Questions.Contains(question)) ?? false;
+        }
     }
 }
