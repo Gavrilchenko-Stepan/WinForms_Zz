@@ -29,7 +29,6 @@ namespace MainForm
             "Уметь",
             "Владеть"
         };
-
         public Form1()
         {
             InitializeComponent();
