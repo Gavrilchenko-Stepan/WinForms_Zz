@@ -22,12 +22,35 @@ namespace MainForm
         private List<Ticket> _currentTickets;
         private string questionsFilePath;
         private TicketGenerator _ticketGenerator;
+
+        private readonly List<string> _defaultCategories = new List<string>
+        {
+            "Знать",
+            "Уметь",
+            "Владеть"
+        };
         public Form1()
         {
             InitializeComponent();
             _ticketGenerator = new TicketGenerator();
             listBoxCategories.SelectedIndexChanged += ListBoxCategories_SelectedIndexChanged;
             toolStripButton2.Click += ToolStripButton2_Click;
+
+            this.KeyPreview = true;
+
+            ShowDefaultCategories();
+        }
+
+        private void ShowDefaultCategories()
+        {
+            listBoxCategories.Items.Clear();
+            listBoxCategories.Items.AddRange(_defaultCategories.ToArray());
+
+            // Выбираем первую категорию, если есть
+            if (listBoxCategories.Items.Count > 0)
+            {
+                listBoxCategories.SelectedIndex = 0;
+            }
         }
 
         private void ToolStripButton2_Click(object sender, EventArgs e)
@@ -99,17 +122,23 @@ namespace MainForm
             {
                 // Получаем уникальные категории из вопросов
                 var categories = questionManager.Questions
-                .Select(q => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(q.Section.ToLower()))
-                .Distinct()
-                .ToList();
+                    .Select(q => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(q.Section.ToLower()))
+                    .Distinct()
+                    .ToList();
 
                 listBoxCategories.Items.AddRange(categories.ToArray());
+            }
+            else
+            {
+                // Если вопросов нет, показываем категории по умолчанию
+                ShowDefaultCategories();
+                return;
+            }
 
-                // Если есть категории, выбираем первую
-                if (listBoxCategories.Items.Count > 0)
-                {
-                    listBoxCategories.SelectedIndex = 0;
-                }
+            // Если есть категории, выбираем первую
+            if (listBoxCategories.Items.Count > 0)
+            {
+                listBoxCategories.SelectedIndex = 0;
             }
         }
 
@@ -432,6 +461,14 @@ namespace MainForm
         public bool IsQuestionUsed(List<Ticket> tickets, Question question)
         {
             return tickets?.Any(t => t.Questions.Contains(question)) ?? false;
+        }
+
+        private void listBoxQuestions_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Delete)
+            {
+                toolStripButton4_Click(sender, e);
+            }
         }
     }
 }
